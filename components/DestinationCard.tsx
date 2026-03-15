@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type DestinationCardProps = {
   nom: string;
   description: string;
@@ -6,6 +8,7 @@ type DestinationCardProps = {
 
 const DestinationCard = ({nom, description, image}: DestinationCardProps) => {
     return (
+        <Link href={`/destination/${nom.toLowerCase()}`} className="block">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105">
             <img 
                 src={image}
@@ -21,6 +24,8 @@ const DestinationCard = ({nom, description, image}: DestinationCardProps) => {
                 </p>
             </div>
         </div>
+
+    </Link>
     );
 };
 export default DestinationCard;
