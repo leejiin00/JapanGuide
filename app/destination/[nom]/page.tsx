@@ -1,30 +1,55 @@
-// 1. On précise que params est maintenant une "Promise" (une promesse)
+// 1. On importe notre base de données
+import { destinationsData } from "../../../data/destinations";
+
 type PageDestinationProps = {
   params: Promise<{
     nom: string;
   }>;
 };
 
-// 2. On ajoute "async" devant notre composant pour l'autoriser à patienter
 const PageDestination = async ({ params }: PageDestinationProps) => {
-  
-  // 3. On ajoute "await" pour dire : "Attends d'avoir lu l'URL avant de continuer"
   const parametresResolus = await params;
-  const nomDeLaVille = parametresResolus.nom;
+  const nomDeLaVilleDansLUrl = parametresResolus.nom.toLowerCase();
 
+  // 2. On cherche la ville dont l'ID correspond au mot dans l'URL
+  const villeTrouvee = destinationsData.find(
+    (destination) => destination.id === nomDeLaVilleDansLUrl
+  );
+
+  // 3. Sécurité : Si quelqu'un tape /destination/paris, on affiche une erreur
+  if (!villeTrouvee) {
+    return (
+      <main className="min-h-screen p-10 flex justify-center bg-slate-50">
+        <h1 className="text-3xl text-red-600 font-bold mt-20">Oups ! Cette ville n'est pas dans notre guide.</h1>
+      </main>
+    );
+  }
+
+  // 4. Si on a trouvé la ville, on affiche ses VRAIES informations !
   return (
-    <main className="min-h-screen p-10 flex flex-col items-center justify-center bg-slate-50">
-      <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-3xl text-center border-t-4 border-red-600">
-        
-        <h1 className="text-5xl font-bold text-red-600 mb-6 capitalize">
-          Découvrir {nomDeLaVille} 🎌
-        </h1>
-        
-        <p className="text-xl text-gray-700">
-          Bienvenue sur la page dédiée à <span className="font-bold capitalize">{nomDeLaVille}</span>. 
-          C'est ici que nous mettrons bientôt toutes les informations détaillées, les meilleurs restaurants et les lieux à visiter !
+    <main className="min-h-screen bg-slate-50 pb-20">
+      {/* Une grande image d'en-tête */}
+      <div className="w-full h-64 md:h-96 relative">
+        <img 
+          src={villeTrouvee.image} 
+          alt={`Paysage de ${villeTrouvee.nom}`}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-widest uppercase shadow-lg">
+            {villeTrouvee.nom}
+          </h1>
+        </div>
+      </div>
+
+      {/* Le contenu détaillé */}
+      <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 mt-8 rounded-xl shadow-lg">
+        <h2 className="text-3xl font-semibold text-gray-800 mb-6 border-b-2 border-red-500 pb-2 inline-block">
+          À propos de {villeTrouvee.nom}
+        </h2>
+        <p className="text-lg text-gray-700 leading-relaxed">
+          {villeTrouvee.contenuDetaille}
         </p>
-        
       </div>
     </main>
   );
