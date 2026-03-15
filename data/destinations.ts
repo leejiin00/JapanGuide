@@ -6,20 +6,35 @@ export const destinationsData = [
     contenuDetaille: "Tokyo est une ville fascinante où les gratte-ciel futuristes côtoient les temples anciens. Ne manquez pas le carrefour de Shibuya, le temple Senso-ji et le quartier électronique d'Akihabara.",
     image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=500&q=80",
     
-    // NOUVEAU : Les hôtels
+    //Les hôtels
     hotels: [
       { nom: "Shinjuku Granbell Hotel", prix: "120€", type: "Moderne", image: "https://images.unsplash.com/photo-1551882547-ff40eb0d13c0?w=500&q=80" },
       { nom: "Nine Hours Capsule", prix: "40€", type: "Capsule", image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=500&q=80" }
     ],
     
-    // NOUVEAU : Les activités
-    activites: [
-      { titre: "Visite du Senso-ji", categorie: "Culture", duree: "2h" },
-      { titre: "Mario Kart dans les rues", categorie: "Fun", duree: "1h30" },
-      { titre: "Dégustation au marché de Toyosu", categorie: "Gastronomie", duree: "3h" }
+    //Les activités
+   activites: [
+      { 
+        titre: "Visite du Senso-ji", 
+        categorie: "Culture", 
+        duree: "2h",
+        image: "https://images.unsplash.com/photo-1532236204992-f5e85c024202?w=300&q=80"
+      },
+      { 
+        titre: "Mario Kart dans les rues", 
+        categorie: "Fun", 
+        duree: "1h30",
+        image: "https://images.unsplash.com/photo-1542051841857-4190651f600c?w=300&q=80"
+      },
+      { 
+        titre: "Dégustation au marché", 
+        categorie: "Gastronomie", 
+        duree: "3h",
+        image: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=300&q=80"
+      }
     ],
     
-    // NOUVEAU : Les faux avis
+    //Les faux avis
     avis: [
       { auteur: "Sophie L.", note: 5, commentaire: "Une ville incroyable, propre et sécurisée. Le choc culturel est total !" },
       { auteur: "Marc D.", note: 4, commentaire: "Génial, mais attention au monde dans les transports aux heures de pointe." },
@@ -42,4 +57,5 @@ export const destinationsData = [
     image: "https://images.unsplash.com/photo-1590559899731-a382839e5549?w=500&q=80",
     hotels: [], activites: [], avis: [] // On les laisse vides pour l'instant
   }
+
 ];

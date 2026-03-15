@@ -28,34 +28,43 @@ const PageHotels = async ({ params }: PageHotelsProps) => {
         Où dormir à {villeTrouvee.nom} ?
       </h2>
 
-      {/* On vérifie s'il y a des hôtels dans notre base de données pour cette ville */}
       {villeTrouvee.hotels && villeTrouvee.hotels.length > 0 ? (
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* On utilise .map() pour afficher chaque hôtel */}
+        <div className="flex flex-col gap-4">
           {villeTrouvee.hotels.map((hotel, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transition-transform hover:-translate-y-1 hover:shadow-lg">
-              <img src={hotel.image} alt={hotel.nom} className="w-full h-48 object-cover" />
+            
+            // Nouveau design horizontal
+            <div key={index} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-6 hover:-translate-y-1 hover:shadow-md transition-all">
               
-              <div className="p-5 flex flex-col flex-grow">
+              {/* La petite image */}
+              <img 
+                src={hotel.image} 
+                alt={hotel.nom} 
+                className="w-full sm:w-32 h-40 sm:h-32 rounded-lg object-cover shadow-sm shrink-0" 
+              />
+              
+              {/* Le texte à droite */}
+              <div className="flex-1 w-full flex flex-col h-full py-1">
                 <h3 className="text-xl font-bold text-gray-800 mb-2">{hotel.nom}</h3>
+                <span className="inline-block bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-medium w-max mb-4">
+                  {hotel.type}
+                </span>
                 
-                <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-100">
-                  <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-medium">
-                    {hotel.type}
-                  </span>
-                  <span className="text-red-600 font-bold text-lg">
+                <div className="mt-auto flex justify-end w-full border-t border-gray-100 pt-3">
+                  <span className="text-red-600 font-bold text-xl">
                     {hotel.prix} <span className="text-sm text-gray-500 font-normal">/ nuit</span>
                   </span>
                 </div>
               </div>
+
             </div>
           ))}
         </div>
 
       ) : (
+        // ... (message si pas d'hôtels)
         <p className="text-gray-500 italic bg-white p-6 rounded-lg shadow-sm">
-          Nous n'avons pas encore de recommandations d'hôtels pour cette ville. Revenez plus tard !
+          Nous n'avons pas encore de recommandations d'hôtels pour cette ville.
         </p>
       )}
     </div>
