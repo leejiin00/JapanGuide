@@ -6,8 +6,6 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AppWithStats, AppCategory } from '@/types/database'
 
-// ─── Config catégories ────────────────────────────────────────
-
 const CATEGORIES: {
   key:   AppCategory | 'all'
   label: string
@@ -34,13 +32,9 @@ const CATEGORY_LABELS: Record<AppCategory, string> = {
   culture:       'Culture & Guide',
 }
 
-// ─── Props ────────────────────────────────────────────────────
-
 interface Props {
   appsByCategory: Record<AppCategory, AppWithStats[]>
 }
-
-// ─── AppCard ─────────────────────────────────────────────────
 
 function AppCard({ app, index }: { app: AppWithStats; index: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -53,7 +47,7 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
+      viewport={{ once: true, margin: '0px 0px -150px 0px' }}
       transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
     >
       <motion.div
@@ -67,18 +61,14 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
         }}
         onClick={() => setExpanded(!expanded)}
       >
-        {/* ── En-tête de la carte ── */}
         <div className="p-5">
           <div className="flex items-start gap-4">
-            {/* Icône */}
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"
               style={{ background: `${app.accent_color}15`, border: `1px solid ${app.accent_color}25` }}
             >
               {app.icon_emoji}
             </div>
-
-            {/* Infos principales */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
                 <h3 className="font-display font-light text-white text-lg leading-tight">
@@ -103,19 +93,14 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
                   )}
                 </div>
               </div>
-
               <p className="text-xs text-white/50 font-body leading-relaxed mb-2 line-clamp-2">
                 {app.description}
               </p>
-
               <div className="flex items-center gap-4">
-                {/* Prix */}
                 <span className="text-[10px] font-body" style={{ color: priceColor }}>
                   {app.price_type === 'gratuit'  ? '● Gratuit' :
                    app.price_type === 'freemium' ? '◐ Freemium' : '● Payant'}
                 </span>
-
-                {/* Note */}
                 {app.avg_rating && (
                   <span className="text-[10px] font-body text-white/30 flex items-center gap-1">
                     <span style={{ color: '#fbbf24' }}>★</span>
@@ -128,7 +113,6 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
           </div>
         </div>
 
-        {/* ── Détail expandable ── */}
         <AnimatePresence initial={false}>
           {expanded && (
             <motion.div
@@ -138,15 +122,10 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               style={{ overflow: 'hidden' }}
             >
-              <div
-                className="px-5 pb-5"
-                style={{ borderTop: `1px solid ${app.accent_color}20` }}
-              >
+              <div className="px-5 pb-5" style={{ borderTop: `1px solid ${app.accent_color}20` }}>
                 <p className="text-sm text-white/50 font-body leading-relaxed mt-4 mb-5">
                   {app.long_description}
                 </p>
-
-                {/* Prix détail */}
                 <div className="flex items-center gap-2 mb-5">
                   <span
                     className="text-[10px] px-3 py-1 rounded-full font-body tracking-wider"
@@ -163,8 +142,6 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
                     </span>
                   )}
                 </div>
-
-                {/* Liens de téléchargement */}
                 <div className="flex gap-3 flex-wrap">
                   {app.url_appstore && (
                     <motion.a
@@ -175,11 +152,7 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
                       whileHover={{ scale: 1.04, boxShadow: `0 0 20px ${app.accent_color}30` }}
                       whileTap={{ scale: 0.97 }}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-body tracking-wider"
-                      style={{
-                        background: `${app.accent_color}15`,
-                        border:     `1px solid ${app.accent_color}30`,
-                        color:      app.accent_color,
-                      }}
+                      style={{ background: `${app.accent_color}15`, border: `1px solid ${app.accent_color}30`, color: app.accent_color }}
                     >
                       🍎 App Store
                     </motion.a>
@@ -193,11 +166,7 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
                       whileHover={{ scale: 1.04, boxShadow: `0 0 20px ${app.accent_color}30` }}
                       whileTap={{ scale: 0.97 }}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-body tracking-wider"
-                      style={{
-                        background: `${app.accent_color}15`,
-                        border:     `1px solid ${app.accent_color}30`,
-                        color:      app.accent_color,
-                      }}
+                      style={{ background: `${app.accent_color}15`, border: `1px solid ${app.accent_color}30`, color: app.accent_color }}
                     >
                       🤖 Google Play
                     </motion.a>
@@ -210,11 +179,7 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
                       onClick={(e) => e.stopPropagation()}
                       whileHover={{ scale: 1.04 }}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-body tracking-wider"
-                      style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border:     '1px solid rgba(255,255,255,0.1)',
-                        color:      'rgba(255,255,255,0.45)',
-                      }}
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}
                     >
                       🌐 Site web
                     </motion.a>
@@ -225,7 +190,6 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
           )}
         </AnimatePresence>
 
-        {/* Toggle hint */}
         <div className="px-5 pb-4 flex justify-between items-center">
           <span className="text-[10px] text-white/20 font-body">
             {expanded ? 'Réduire' : 'Voir les détails et liens'}
@@ -243,8 +207,6 @@ function AppCard({ app, index }: { app: AppWithStats; index: number }) {
   )
 }
 
-// ─── Main page ────────────────────────────────────────────────
-
 export default function AppsPageClient({ appsByCategory }: Props) {
   const [activeCategory, setActiveCategory] = useState<AppCategory | 'all'>('all')
 
@@ -256,22 +218,16 @@ export default function AppsPageClient({ appsByCategory }: Props) {
       ? (Object.keys(appsByCategory) as AppCategory[]).filter((c) => appsByCategory[c].length > 0)
       : [activeCategory]
 
-  const activeCategoryConfig = CATEGORIES.find((c) => c.key === activeCategory)
-
   return (
     <main className="min-h-screen pt-28 pb-20" style={{ background: '#060410' }}>
 
-      {/* ── Hero ── */}
       <div className="max-w-7xl mx-auto px-6 mb-16">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p
-            className="text-[10px] tracking-[0.4em] uppercase font-body mb-4"
-            style={{ color: '#fb923c' }}
-          >
+          <p className="text-[10px] tracking-[0.4em] uppercase font-body mb-4" style={{ color: '#fb923c' }}>
             アプリ — Applications
           </p>
           <h1
@@ -288,7 +244,6 @@ export default function AppsPageClient({ appsByCategory }: Props) {
         </motion.div>
       </div>
 
-      {/* ── Essentiels banner ── */}
       {essentialApps.length > 0 && activeCategory === 'all' && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -298,11 +253,7 @@ export default function AppsPageClient({ appsByCategory }: Props) {
         >
           <div
             className="rounded-2xl p-6"
-            style={{
-              background:    'rgba(251,146,60,0.06)',
-              border:        '1px solid rgba(251,146,60,0.2)',
-              backdropFilter:'blur(16px)',
-            }}
+            style={{ background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.2)', backdropFilter: 'blur(16px)' }}
           >
             <div className="flex items-center gap-3 mb-4">
               <span className="text-lg">⚡</span>
@@ -315,10 +266,7 @@ export default function AppsPageClient({ appsByCategory }: Props) {
                 <div
                   key={app.id}
                   className="flex items-center gap-2 px-4 py-2 rounded-full"
-                  style={{
-                    background: `${app.accent_color}12`,
-                    border:     `1px solid ${app.accent_color}25`,
-                  }}
+                  style={{ background: `${app.accent_color}12`, border: `1px solid ${app.accent_color}25` }}
                 >
                   <span className="text-base">{app.icon_emoji}</span>
                   <span className="text-xs font-body" style={{ color: app.accent_color }}>{app.name}</span>
@@ -329,14 +277,9 @@ export default function AppsPageClient({ appsByCategory }: Props) {
         </motion.div>
       )}
 
-      {/* ── Filtres catégories ── */}
       <div
         className="sticky top-18 z-30 mb-12"
-        style={{
-          background:    'rgba(6,4,16,0.85)',
-          backdropFilter:'blur(20px)',
-          borderBottom:  '1px solid rgba(255,255,255,0.05)',
-        }}
+        style={{ background: 'rgba(6,4,16,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto">
           {CATEGORIES.map(({ key, label, icon, color }) => (
@@ -370,7 +313,6 @@ export default function AppsPageClient({ appsByCategory }: Props) {
         </div>
       </div>
 
-      {/* ── Contenu ── */}
       <div className="max-w-7xl mx-auto px-6">
         <AnimatePresence mode="wait">
           <motion.div
@@ -387,15 +329,11 @@ export default function AppsPageClient({ appsByCategory }: Props) {
 
               return (
                 <div key={category} className="mb-16">
-                  {/* Titre de section (affiché seulement en mode "Toutes") */}
                   {activeCategory === 'all' && (
                     <div className="flex items-center gap-3 mb-6">
                       <span className="text-2xl">{catConfig?.icon}</span>
                       <div>
-                        <h2
-                          className="font-display font-thin text-white"
-                          style={{ fontSize: '1.6rem' }}
-                        >
+                        <h2 className="font-display font-thin text-white" style={{ fontSize: '1.6rem' }}>
                           {CATEGORY_LABELS[category]}
                         </h2>
                         <p className="text-[10px] text-white/25 font-body">
@@ -408,7 +346,6 @@ export default function AppsPageClient({ appsByCategory }: Props) {
                       />
                     </div>
                   )}
-
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {apps.map((app, i) => (
                       <AppCard key={app.id} app={app} index={i} />
