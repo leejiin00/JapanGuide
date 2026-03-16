@@ -296,7 +296,7 @@ export default function AppsPageClient({ appsByCategory }: Props) {
       )}
 
       <div
-        className="sticky top-[72px] z-30 mb-12"
+        className="sticky top-18 z-30 mb-12"
         style={{ background: 'rgba(6,4,16,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto">

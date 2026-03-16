@@ -1,5 +1,7 @@
 'use client'
 
+// components/DestinationQuiz.tsx
+
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -31,41 +33,43 @@ const QUESTIONS: Question[] = [
     kanji:    '旅',
     question: 'Quelle est votre vision du voyage idéal ?',
     choices: [
-      { label: 'Spiritualité & silence',   icon: '🕯️', scores: { kyoto: 3, nara: 2, hakone: 1 } },
-      { label: 'Énergie urbaine & néons',  icon: '🏙️', scores: { tokyo: 3, osaka: 2 } },
-      { label: 'Nature & ressourcement',   icon: '🌿', scores: { hakone: 3, nara: 2, hiroshima: 1 } },
-      { label: 'Gastronomie & fête',       icon: '🍜', scores: { osaka: 3, tokyo: 1, kyoto: 1 } },
+      { label: 'Spiritualité & silence',    icon: '🕯️', scores: { kyoto: 3, nara: 2, hakone: 1 } },
+      { label: 'Énergie urbaine & néons',   icon: '🏙️', scores: { tokyo: 3, osaka: 2 } },
+      { label: 'Nature & grands espaces',   icon: '🌿', scores: { hokkaido: 3, hakone: 2, nara: 1 } },
+      { label: 'Plage & culture insulaire', icon: '🏖️', scores: { okinawa: 3, hiroshima: 1 } },
     ],
   },
   {
     kanji:    '心',
     question: 'Ce qui vous touche profondément...',
     choices: [
-      { label: 'Les traces du temps qui passe', icon: '⛩️', scores: { kyoto: 3, nara: 2, hiroshima: 1 } },
-      { label: 'La beauté brute de la nature',  icon: '🗻', scores: { hakone: 3, nara: 1 } },
-      { label: 'Le chaos vivant des villes',    icon: '🚦', scores: { tokyo: 3, osaka: 2 } },
-      { label: 'Les histoires humaines',        icon: '🕊️', scores: { hiroshima: 3, kyoto: 1, nara: 1 } },
+      { label: 'Les traces du temps qui passe',   icon: '⛩️', scores: { kyoto: 3, nara: 2, hiroshima: 1 } },
+      { label: 'La beauté brute de la nature',    icon: '🗻', scores: { hokkaido: 3, hakone: 2 } },
+      { label: 'Le chaos vivant des villes',      icon: '🚦', scores: { tokyo: 3, osaka: 2 } },
+      { label: 'Une civilisation à part entière', icon: '🌺', scores: { okinawa: 3, kyoto: 1, nara: 1 } },
     ],
   },
   {
     kanji:    '夢',
     question: 'Votre souvenir de voyage parfait serait...',
     choices: [
-      { label: "Un bain chaud face au Fuji",          icon: '♨️', scores: { hakone: 3 } },
-      { label: 'Se perdre dans une ruelle la nuit',   icon: '🏮', scores: { kyoto: 2, osaka: 2, tokyo: 1 } },
-      { label: "Un cerf qui s'incline devant moi",    icon: '🦌', scores: { nara: 3 } },
-      { label: 'Voir le soleil se lever sur la mer',  icon: '🌅', scores: { hiroshima: 2, hakone: 1, tokyo: 1 } },
+      { label: 'Skier dans la meilleure poudreuse du monde', icon: '⛷️', scores: { hokkaido: 3, hakone: 1 } },
+      { label: 'Se perdre dans une ruelle la nuit',          icon: '🏮', scores: { kyoto: 2, osaka: 2, tokyo: 1 } },
+      { label: 'Nager avec des tortues dans un lagon turquoise', icon: '🐢', scores: { okinawa: 3, hiroshima: 1 } },
+      { label: 'Voir le soleil se lever sur la mer',         icon: '🌅', scores: { hiroshima: 2, nara: 1, hakone: 1 } },
     ],
   },
 ]
 
 const RESULTS: Record<string, Result> = {
-  kyoto:     { slug: 'kyoto',     kanji: '京都', name: 'Kyoto',     subtitle: "L'Âme Ancienne",      reason: 'Vous cherchez la profondeur, le silence et la beauté millénaire. Kyoto vous attend au détour de chaque ruelle pavée.',                                    accentColor: '#c084fc', icon: '⛩️' },
-  tokyo:     { slug: 'tokyo',     kanji: '東京', name: 'Tokyo',     subtitle: 'Lumières Infinies',    reason: "Vous vibrez avec l'énergie des villes vivantes. Tokyo est la seule métropole qui ne vous laissera jamais indifférent.",                              accentColor: '#38bdf8', icon: '🏙️' },
-  hakone:    { slug: 'hakone',    kanji: '箱根', name: 'Hakone',    subtitle: 'Le Souffle du Fuji',   reason: 'Vous avez besoin de grand air et de beauté naturelle. Hakone et ses onsen face au Fuji vous ressourceront profondément.',                              accentColor: '#fb923c', icon: '🗻' },
-  osaka:     { slug: 'osaka',     kanji: '大阪', name: 'Osaka',     subtitle: "L'Art de Vivre",       reason: "Vous aimez rire, manger et vivre intensément. Osaka est le Japon sans filtre — chaleureux, festif et irrésistible.",                                  accentColor: '#f472b6', icon: '🏯' },
-  nara:      { slug: 'nara',      kanji: '奈良', name: 'Nara',      subtitle: 'Les Gardiens Sacrés',  reason: "Vous recherchez la douceur et le sacré. Nara et ses cerfs divins vous offriront un moment hors du temps.",                                             accentColor: '#34d399', icon: '🦌' },
-  hiroshima: { slug: 'hiroshima', kanji: '広島', name: 'Hiroshima', subtitle: 'Mémoire & Renaissance', reason: "Vous êtes touché par les histoires humaines et la résilience. Hiroshima vous marquera à jamais.",                                                    accentColor: '#94a3b8', icon: '🕊️' },
+  kyoto:    { slug: 'kyoto',    kanji: '京都', name: 'Kyoto',    subtitle: "L'Âme Ancienne",       reason: 'Vous cherchez la profondeur, le silence et la beauté millénaire. Kyoto vous attend au détour de chaque ruelle pavée.',                                accentColor: '#c084fc', icon: '⛩️' },
+  tokyo:    { slug: 'tokyo',    kanji: '東京', name: 'Tokyo',    subtitle: 'Lumières Infinies',     reason: "Vous vibrez avec l'énergie des villes vivantes. Tokyo est la seule métropole qui ne vous laissera jamais indifférent.",                          accentColor: '#38bdf8', icon: '🏙️' },
+  hakone:   { slug: 'hakone',   kanji: '箱根', name: 'Hakone',   subtitle: 'Le Souffle du Fuji',    reason: 'Vous avez besoin de grand air et de beauté naturelle. Hakone et ses onsen face au Fuji vous ressourceront profondément.',                          accentColor: '#fb923c', icon: '🗻' },
+  osaka:    { slug: 'osaka',    kanji: '大阪', name: 'Osaka',    subtitle: "L'Art de Vivre",        reason: "Vous aimez rire, manger et vivre intensément. Osaka est le Japon sans filtre — chaleureux, festif et irrésistible.",                              accentColor: '#f472b6', icon: '🏯' },
+  nara:     { slug: 'nara',     kanji: '奈良', name: 'Nara',     subtitle: 'Les Gardiens Sacrés',   reason: "Vous recherchez la douceur et le sacré. Nara et ses cerfs divins vous offriront un moment hors du temps.",                                         accentColor: '#34d399', icon: '🦌' },
+  hiroshima:{ slug: 'hiroshima',kanji: '広島', name: 'Hiroshima',subtitle: 'Mémoire & Renaissance', reason: "Vous êtes touché par les histoires humaines et la résilience. Hiroshima vous marquera à jamais.",                                                accentColor: '#94a3b8', icon: '🕊️' },
+  okinawa:  { slug: 'okinawa',  kanji: '沖縄', name: 'Okinawa',  subtitle: "L'Âme des Tropiques",   reason: "Vous rêvez de mer turquoise et de cultures insulaires uniques. Okinawa et son Royaume Ryukyu vous révéleront un Japon que vous n'imaginiez pas.",  accentColor: '#22d3ee', icon: '🏖️' },
+  hokkaido: { slug: 'hokkaido', kanji: '北海道',name: 'Hokkaidō', subtitle: 'Le Grand Nord Sauvage', reason: "Vous aimez la nature démesurée et les grands espaces vierges. Hokkaidō — ses champs de lavande, sa poudreuse légendaire et ses volcans — est fait pour vous.", accentColor: '#818cf8', icon: '🏔️' },
 }
 
 function computeResult(answers: number[]): Result {
@@ -142,7 +146,6 @@ export default function DestinationQuiz() {
 
   return (
     <>
-      {/* ── Bouton déclencheur ── */}
       <motion.button
         onClick={handleOpen}
         whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(251,146,60,0.35)' }}
@@ -154,7 +157,6 @@ export default function DestinationQuiz() {
         Trouver ma destination
       </motion.button>
 
-      {/* ── Modal ── */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -162,8 +164,8 @@ export default function DestinationQuiz() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 pt-100"
-            style={{ background: 'rgba(6,4,16,0.92)'}}
+            className="fixed inset-0 z-100 flex items-center justify-center p-6 pt-24"
+            style={{ background: 'rgba(6,4,16,0.92)', backdropFilter: 'blur(16px)' }}
             onClick={(e) => e.target === e.currentTarget && handleClose()}
           >
             <motion.div
@@ -175,21 +177,19 @@ export default function DestinationQuiz() {
               style={{
                 background:    'rgba(12,8,32,0.98)',
                 border:        '1px solid rgba(255,255,255,0.1)',
+                backdropFilter:'blur(24px)',
                 borderRadius:  '24px',
                 boxShadow:     '0 40px 100px rgba(0,0,0,0.8)',
               }}
             >
-              {/* Glow ambiant */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{ background: 'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(251,146,60,0.1), transparent)', borderRadius: '24px' }}
-                
+                aria-hidden
               />
 
-              {/* ── Barre top : retour + fermer ── */}
+              {/* Barre top */}
               <div className="relative z-10 flex items-center justify-between px-6 pt-6 pb-2">
-
-                {/* Bouton retour */}
                 {isQuestion && step > 0 ? (
                   <motion.button
                     onClick={handleBack}
@@ -205,30 +205,19 @@ export default function DestinationQuiz() {
                   <span className="w-16" />
                 )}
 
-                {/* Bouton fermer — TOUJOURS visible */}
                 <button
                   onClick={handleClose}
                   className="flex items-center justify-center w-9 h-9 rounded-full font-body text-sm transition-all"
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border:     '1px solid rgba(255,255,255,0.15)',
-                    color:      'rgba(255,255,255,0.6)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
-                    e.currentTarget.style.color = '#fff'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-                    e.currentTarget.style.color = 'rgba(255,255,255,0.6)'
-                  }}
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#fff' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
                   aria-label="Fermer le quiz"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* ── Contenu ── */}
+              {/* Contenu */}
               <div className="relative z-10 px-8 pb-10 pt-2">
                 <AnimatePresence mode="wait">
 
@@ -313,9 +302,7 @@ export default function DestinationQuiz() {
                       <p className="text-sm font-body italic mb-4" style={{ color: result.accentColor + 'aa' }}>
                         {result.subtitle}
                       </p>
-
                       <div className="mx-auto mb-4 h-px w-24" style={{ background: `linear-gradient(to right, transparent, ${result.accentColor}60, transparent)` }} />
-
                       <p className="text-sm text-white/50 font-body leading-relaxed mb-7 px-2">
                         {result.reason}
                       </p>
@@ -330,7 +317,6 @@ export default function DestinationQuiz() {
                         >
                           Explorer {result.name} →
                         </motion.button>
-
                         <motion.button
                           onClick={handleRestart}
                           whileHover={{ scale: 1.05 }}

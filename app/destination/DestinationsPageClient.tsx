@@ -1,6 +1,6 @@
 'use client'
 
-// app/destinations/DestinationsPageClient.tsx
+// app/destination/DestinationsPageClient.tsx
 
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
@@ -11,11 +11,11 @@ interface Props {
   destinations: DestinationWithStats[]
 }
 
-const REGIONS = ['Toutes', 'Kansai', 'Kantō', 'Chūgoku']
+const REGIONS = ['Toutes', 'Kansai', 'Kantō', 'Chūgoku', 'Ryūkyū', 'Hokkaidō']
 
 export default function DestinationsPageClient({ destinations }: Props) {
-  const [search,        setSearch]        = useState('')
-  const [activeRegion,  setActiveRegion]  = useState('Toutes')
+  const [search,       setSearch]       = useState('')
+  const [activeRegion, setActiveRegion] = useState('Toutes')
 
   const filtered = useMemo(() => {
     return destinations.filter((d) => {
@@ -58,7 +58,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
 
       {/* ── Filters ── */}
       <div
-        className="sticky top-20 z-10 mb-12"
+        className="sticky top-18 z-30 mb-12"
         style={{
           background:    'rgba(6,4,16,0.85)',
           backdropFilter:'blur(20px)',
@@ -69,9 +69,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
 
           {/* Search */}
           <div className="relative shrink-0 w-full sm:w-64">
-            <span
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 text-sm pointer-events-none"
-            >
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 text-sm pointer-events-none">
               🔍
             </span>
             <input
@@ -80,10 +78,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher une ville, un tag..."
               className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-body text-white placeholder-white/20 outline-none transition-all"
-              style={{
-                background:  'rgba(255,255,255,0.05)',
-                border:      '1px solid rgba(255,255,255,0.1)',
-              }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
               onFocus={(e) => (e.target.style.borderColor = 'rgba(251,146,60,0.5)')}
               onBlur={(e)  => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
             />
