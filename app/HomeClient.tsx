@@ -19,7 +19,7 @@ function KanjiLayer() {
       {chars.map((char, i) => (
         <motion.span
           key={i}
-          className="absolute text-white/2.5 font-display"
+          className="absolute text-white/[0.025] font-display"
           style={{
             fontSize: `${40 + (i % 4) * 30}px`,
             left:     `${(i / chars.length) * 95}%`,
@@ -153,7 +153,7 @@ export default function HomeClient({ destinations }: Props) {
 
             {/* Secondary CTA */}
             <motion.a
-              href="/destinations"
+              href="/destination"
               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(255,255,255,0.08)' }}
               whileTap={{ scale: 0.97 }}
               className="px-9 py-4 rounded-full text-sm tracking-widest uppercase text-white/55 font-body"

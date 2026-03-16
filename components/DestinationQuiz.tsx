@@ -475,7 +475,7 @@ export default function DestinationQuiz() {
 
                       {/* Lien voir toutes */}
                       <button
-                        onClick={() => router.push('/destinations')}
+                        onClick={() => router.push('/destination')}
                         className="mt-5 text-[10px] tracking-wider uppercase font-body underline underline-offset-4 block mx-auto"
                         style={{ color: 'rgba(255,255,255,0.2)' }}
                       >

@@ -1,12 +1,14 @@
-// app/page.tsx — Server Component (pas de 'use client')
-// Fetche les destinations depuis Supabase au moment du rendu.
-
 import { getDestinations } from '@/lib/supabase/queries'
-import HomeClient from './HomeClient'
+import DestinationsPageClient from './destination/DestinationsPageClient'
 
-export const revalidate = 3600 // ISR — revalidation toutes les heures
+export const revalidate = 3600
 
-export default async function HomePage() {
-  const destination = await getDestinations()
-  return <HomeClient destinations={destination} />
+export const metadata = {
+  title:       'Destinations — Nihon Guide',
+  description: 'Explorez toutes nos destinations au Japon : Kyoto, Tokyo, Hakone, Osaka, Nara, Hiroshima.',
+}
+
+export default async function DestinationsPage() {
+  const destinations = await getDestinations()
+  return <DestinationsPageClient destinations={destinations} />
 }
