@@ -15,7 +15,7 @@ interface Props {
 function KanjiLayer() {
   const chars = ['日', '本', '旅', '夢', '美', '心', '道', '光', '影', '神', '風', '海', '火', '山']
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden>
+    <div className="absolute inset-0   overflow-hidden pointer-events-none select-none" aria-hidden>
       {chars.map((char, i) => (
         <motion.span
           key={i}
@@ -96,7 +96,7 @@ export default function HomeClient({ destinations }: Props) {
         {/* Hero content */}
         <motion.div
           style={{ opacity: opacityHero }}
-          className="relative z-50 text-center px-6 max-w-5xl mx-auto"
+          className="relative z-10 text-center px-6 max-w-5xl mx-auto"
         >
           <motion.p
             initial={{ opacity: 0, letterSpacing: '0.8em' }}
@@ -234,12 +234,12 @@ export default function HomeClient({ destinations }: Props) {
               地域 — Destinations
             </p>
             <h2 className="font-display font-thin text-white leading-tight mb-6" style={{ fontSize: 'clamp(2.5rem, 5vw, 3.8rem)' }}>
-              Six Visages<br />
-              <em className="text-white/45">d'un Même Rêve</em>
+              Nos Coups<br />
+              <em className="text-white/45">de Cœur</em>
             </h2>
             <p className="text-white/38 font-body font-light text-sm leading-relaxed">
-              Du chaos lumineux de Tokyo à l'éternel silence de Nara, chaque destination
-              révèle une facette différente de l'âme japonaise.
+              Du chaos lumineux de Tokyo à l'éternel silence de Nara, une sélection de
+              destinations pour commencer votre exploration du Japon.
             </p>
           </motion.div>
 
@@ -249,11 +249,38 @@ export default function HomeClient({ destinations }: Props) {
               <p>Les destinations se chargent...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {destinations.map((dest, i) => (
-                <DestinationCard key={dest.id} destination={dest} index={i} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {destinations.slice(0, 6).map((dest, i) => (
+                  <DestinationCard key={dest.id} destination={dest} index={i} />
+                ))}
+              </div>
+              {destinations.length > 6 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="text-center mt-12"
+                >
+                  <motion.a
+                    href="/destination"
+                    whileHover={{ scale: 1.04, boxShadow: '0 0 30px rgba(251,146,60,0.35)' }}
+                    whileTap={{ scale: 0.97 }}
+                    className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-sm tracking-widest uppercase font-body"
+                    style={{
+                      background:    'rgba(255,255,255,0.05)',
+                      border:        '1px solid rgba(251,146,60,0.3)',
+                      color:         '#fb923c',
+                      backdropFilter:'blur(12px)',
+                    }}
+                  >
+                    Voir les {destinations.length} destinations
+                    <span>→</span>
+                  </motion.a>
+                </motion.div>
+              )}
+            </>
           )}
         </div>
       </section>
