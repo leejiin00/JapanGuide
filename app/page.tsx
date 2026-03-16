@@ -7,6 +7,6 @@ import HomeClient from './HomeClient'
 export const revalidate = 3600 // ISR — revalidation toutes les heures
 
 export default async function HomePage() {
-  const destinations = await getDestinations()
-  return <HomeClient destinations={destinations} />
+  const destination = await getDestinations()
+  return <HomeClient destinations={destination} />
 }

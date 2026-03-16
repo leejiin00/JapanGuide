@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 
 const navLinks = [
   { href: '/',             label: 'Accueil'      },
-  { href: '/destinations', label: 'Destinations' }, // ← corrigé
+  { href: '/destination', label: 'Destinations' }, // ← corrigé
   { href: '/a-propos',     label: 'À Propos'     },
 ]
 
@@ -93,7 +93,7 @@ export default function Navbar() {
         {/* CTA + burger */}
         <div className="flex items-center gap-3">
           <motion.a
-            href="/destinations"
+            href="/destination"
             whileHover={{ scale: 1.04, boxShadow: '0 0 30px rgba(251,146,60,0.45)' }}
             whileTap={{ scale: 0.97 }}
             className="hidden md:block px-5 py-2 rounded-full text-[11px] tracking-[0.2em] uppercase font-medium font-body"
@@ -162,7 +162,7 @@ export default function Navbar() {
                 className="mt-4"
               >
                 <Link
-                  href="/destinations"
+                  href="/destination"
                   className="px-8 py-3 rounded-full text-sm tracking-widest uppercase font-medium font-body"
                   style={{ background: 'linear-gradient(135deg, #fb923c, #f59e0b)', color: '#000' }}
                 >

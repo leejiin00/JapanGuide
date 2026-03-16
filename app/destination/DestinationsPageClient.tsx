@@ -58,7 +58,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
 
       {/* ── Filters ── */}
       <div
-        className="sticky top-[72px] z-30 mb-12"
+        className="sticky top-18 z-30 mb-12"
         style={{
           background:    'rgba(6,4,16,0.85)',
           backdropFilter:'blur(20px)',
@@ -68,7 +68,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
 
           {/* Search */}
-          <div className="relative flex-shrink-0 w-full sm:w-64">
+          <div className="relative shrink-0 w-full sm:w-64">
             <span
               className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 text-sm pointer-events-none"
             >
