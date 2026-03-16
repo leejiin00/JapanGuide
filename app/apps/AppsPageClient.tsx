@@ -36,26 +36,44 @@ interface Props {
   appsByCategory: Record<AppCategory, AppWithStats[]>
 }
 
-function AppCard({ app, index }: { app: AppWithStats; index: number }) {
+function AppCard({
+  app,
+  index,
+  isFirstCategory,
+}: {
+  app: AppWithStats
+  index: number
+  isFirstCategory: boolean
+}) {
   const [expanded, setExpanded] = useState(false)
 
   const priceColor =
     app.price_type === 'gratuit'  ? '#34d399' :
     app.price_type === 'freemium' ? '#fbbf24' : '#f472b6'
 
+  // Cartes dans le viewport dès le chargement → animate directement
+  // Cartes hors viewport → whileInView pour déclencher au scroll
+  const animationProps = isFirstCategory
+    ? {
+        initial:    { opacity: 0, y: 24 },
+        animate:    { opacity: 1, y: 0 },
+        transition: { duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] as any },
+      }
+    : {
+        initial:     { opacity: 0, y: 24 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport:    { once: true, margin: '0px 0px -150px 0px' },
+        transition:  { duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] as any },
+      }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '0px 0px -150px 0px' }}
-      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <motion.div {...animationProps}>
       <motion.div
         whileHover={{ y: -4, boxShadow: `0 24px 60px ${app.accent_color}20` }}
         className="rounded-2xl overflow-hidden cursor-pointer"
         style={{
           background:    'rgba(255,255,255,0.035)',
-          border:        `1px solid rgba(255,255,255,0.07)`,
+          border:        '1px solid rgba(255,255,255,0.07)',
           backdropFilter:'blur(20px)',
           transition:    'border-color 0.3s, box-shadow 0.3s',
         }}
@@ -278,7 +296,7 @@ export default function AppsPageClient({ appsByCategory }: Props) {
       )}
 
       <div
-        className="sticky top-18 z-30 mb-12"
+        className="sticky top-[72px] z-30 mb-12"
         style={{ background: 'rgba(6,4,16,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto">
@@ -322,10 +340,12 @@ export default function AppsPageClient({ appsByCategory }: Props) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {categoriesToShow.map((category) => {
+            {categoriesToShow.map((category, categoryIndex) => {
               const apps = appsByCategory[category]
               if (!apps || apps.length === 0) return null
               const catConfig = CATEGORIES.find((c) => c.key === category)
+              // Première catégorie affichée = déjà dans le viewport au chargement
+              const isFirstCategory = categoryIndex === 0
 
               return (
                 <div key={category} className="mb-16">
@@ -348,7 +368,12 @@ export default function AppsPageClient({ appsByCategory }: Props) {
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {apps.map((app, i) => (
-                      <AppCard key={app.id} app={app} index={i} />
+                      <AppCard
+                        key={app.id}
+                        app={app}
+                        index={i}
+                        isFirstCategory={isFirstCategory}
+                      />
                     ))}
                   </div>
                 </div>
