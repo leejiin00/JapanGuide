@@ -5,7 +5,8 @@ import type { DestinationFull, DestinationWithStats, ReviewInsert, ReviewRow } f
 // ─── Destinations ─────────────────────────────────────────────
 
 export async function getDestinations(): Promise<DestinationWithStats[]> {
-  const supabase = await createClient()
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('destinations_with_stats')
@@ -21,7 +22,8 @@ export async function getDestinations(): Promise<DestinationWithStats[]> {
 }
 
 export async function getDestinationBySlug(slug: string): Promise<DestinationFull | null> {
-  const supabase = await createClient()
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('destinations')
@@ -50,7 +52,8 @@ export async function getDestinationBySlug(slug: string): Promise<DestinationFul
 }
 
 export async function getDestinationMeta(slug: string) {
-  const supabase = await createClient()
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('destinations')
@@ -68,7 +71,8 @@ export async function getDestinationMeta(slug: string) {
 }
 
 export async function getAllSlugs(): Promise<string[]> {
-  const supabase = await createClient()
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('destinations')
@@ -86,7 +90,8 @@ export async function getAllSlugs(): Promise<string[]> {
 // ─── Reviews ──────────────────────────────────────────────────
 
 export async function getApprovedReviews(destinationId: string): Promise<ReviewRow[]> {
-  const supabase = await createClient()
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('reviews')

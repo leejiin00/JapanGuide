@@ -1,15 +1,15 @@
-// app/admin/destinations/page.tsx — Server Component
-import { createClient } from '@/lib/supabase/server'
-import type { DestinationWithStats } from '@/types/database'
-import AdminDestinationsClient from './AdminDestinationsClient'
+// app/destinations/page.tsx — Server Component
+import { getDestinations } from '@/lib/supabase/queries'
+import DestinationsPageClient from './DestinationsPageClient'
 
-export default async function AdminDestinationsPage() {
-  const supabase = await createClient()
+export const revalidate = 3600
 
-  const { data: destinations } = await supabase
-    .from('destinations_with_stats')
-    .select('*')
-    .order('name')
+export const metadata = {
+  title:       'Destinations — Nihon Guide',
+  description: 'Explorez toutes nos destinations au Japon : Kyoto, Tokyo, Hakone, Osaka, Nara, Hiroshima.',
+}
 
-  return <AdminDestinationsClient destinations={(destinations as DestinationWithStats[]) ?? []} />
+export default async function DestinationsPage() {
+  const destinations = await getDestinations()
+  return <DestinationsPageClient destinations={destinations} />
 }
