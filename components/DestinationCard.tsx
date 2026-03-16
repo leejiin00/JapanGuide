@@ -25,8 +25,7 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.75, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
     >
       <Link href={`/destination/${dest.slug}`} className="block group">

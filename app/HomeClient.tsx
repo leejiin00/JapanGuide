@@ -96,7 +96,7 @@ export default function HomeClient({ destinations }: Props) {
         {/* Hero content */}
         <motion.div
           style={{ opacity: opacityHero }}
-          className="relative z-10 text-center px-6 max-w-5xl mx-auto"
+          className="relative z-50 text-center px-6 max-w-5xl mx-auto"
         >
           <motion.p
             initial={{ opacity: 0, letterSpacing: '0.8em' }}

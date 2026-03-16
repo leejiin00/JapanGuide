@@ -6,12 +6,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import DestinationQuiz from '@/components/DestinationQuiz'
+
+const MotionLink = motion.create ? motion.create(Link) : motion(Link);
 
 const navLinks = [
-  { href: '/',             label: 'Accueil'      },
-  { href: '/destination', label: 'Destinations' }, // ← corrigé
-  { href: '/a-propos',     label: 'À Propos'     },
-]
+  { label: 'Accueil', href: '/' }, 
+  { label: 'Destinations', href: '/destination' },
+  { label: 'À propos', href: '/a-propos' },
+];
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -92,19 +95,11 @@ export default function Navbar() {
 
         {/* CTA + burger */}
         <div className="flex items-center gap-3">
-          <motion.a
-            href="/destination"
-            whileHover={{ scale: 1.04, boxShadow: '0 0 30px rgba(251,146,60,0.45)' }}
-            whileTap={{ scale: 0.97 }}
-            className="hidden md:block px-5 py-2 rounded-full text-[11px] tracking-[0.2em] uppercase font-medium font-body"
-            style={{
-              background:  'linear-gradient(135deg, #fb923c, #f59e0b)',
-              color:       '#000',
-              boxShadow:   '0 0 20px rgba(251,146,60,0.25)',
-            }}
-          >
-            Explorer
-          </motion.a>
+          
+          {/* Quiz button */}
+          <div className="hidden md:block">
+            <DestinationQuiz />
+          </div>
 
           {/* Mobile burger */}
           <button
@@ -161,13 +156,7 @@ export default function Navbar() {
                 transition={{ delay: 0.4 }}
                 className="mt-4"
               >
-                <Link
-                  href="/destination"
-                  className="px-8 py-3 rounded-full text-sm tracking-widest uppercase font-medium font-body"
-                  style={{ background: 'linear-gradient(135deg, #fb923c, #f59e0b)', color: '#000' }}
-                >
-                  Explorer le Japon
-                </Link>
+                <DestinationQuiz />
               </motion.div>
             </nav>
           </motion.div>

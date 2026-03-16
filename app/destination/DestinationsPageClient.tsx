@@ -58,7 +58,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
 
       {/* ── Filters ── */}
       <div
-        className="sticky top-18 z-30 mb-12"
+        className="sticky top-20 z-10 mb-12"
         style={{
           background:    'rgba(6,4,16,0.85)',
           backdropFilter:'blur(20px)',
