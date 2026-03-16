@@ -1,9 +1,5 @@
 // types/database.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Structure calquée exactement sur le format que `supabase gen types typescript`
-// produirait. Le respect de ce format est OBLIGATOIRE pour que createClient<Database>
-// résolve les tables correctement et évite le type `never`.
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type Json =
   | string
@@ -15,7 +11,7 @@ export type Json =
 
 export type QuickFact = { label: string; value: string }
 
-// ─── Row types ───────────────────────────────────────────────────────────────
+// ─── Destination types ────────────────────────────────────────────────────────
 
 export type DestinationRow = {
   id:               string
@@ -112,11 +108,63 @@ export type ReviewInsert = {
   highlight:      string
 }
 
-// ─── Database type (format exact Supabase) ───────────────────────────────────
-// Ce type est passé en générique à createServerClient<Database> et
-// createBrowserClient<Database>. Supabase lit Tables[name]["Row"] / ["Insert"] /
-// ["Update"] pour typer chaque .from(). Si cette structure est incorrecte,
-// TypeScript infère `never` pour toutes les opérations.
+// ─── App types ────────────────────────────────────────────────────────────────
+
+export type AppCategory =
+  | 'transport'
+  | 'traduction'
+  | 'paiement'
+  | 'hebergement'
+  | 'nourriture'
+  | 'communication'
+  | 'culture'
+
+export type AppRow = {
+  id:               string
+  name:             string
+  slug:             string
+  description:      string
+  long_description: string
+  category:         AppCategory
+  icon_url:         string
+  icon_emoji:       string
+  accent_color:     string
+  price_type:       'gratuit' | 'payant' | 'freemium'
+  price_detail:     string
+  url_appstore:     string
+  url_playstore:    string
+  url_website:      string
+  available_offline: boolean
+  essential:        boolean
+  published:        boolean
+  sort_order:       number
+  created_at:       string
+  updated_at:       string
+}
+
+export type AppReviewRow = {
+  id:         string
+  app_id:     string
+  author:     string
+  country:    string
+  flag:       string
+  rating:     number
+  body:       string
+  approved:   boolean
+  created_at: string
+  updated_at: string
+}
+
+export type AppWithStats = AppRow & {
+  review_count: number
+  avg_rating:   number | null
+}
+
+export type AppFull = AppRow & {
+  app_reviews: AppReviewRow[]
+}
+
+// ─── Database type ────────────────────────────────────────────────────────────
 
 export type Database = {
   public: {
@@ -131,40 +179,31 @@ export type Database = {
         Row:    HotelRow
         Insert: Omit<HotelRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
         Update: Partial<Omit<HotelRow, 'id' | 'created_at' | 'updated_at'>>
-        Relationships: [
-          {
-            foreignKeyName: 'hotels_destination_id_fkey'
-            columns:        ['destination_id']
-            referencedRelation: 'destinations'
-            referencedColumns:  ['id']
-          }
-        ]
+        Relationships: [{ foreignKeyName: 'hotels_destination_id_fkey'; columns: ['destination_id']; referencedRelation: 'destinations'; referencedColumns: ['id'] }]
       }
       activities: {
         Row:    ActivityRow
         Insert: Omit<ActivityRow, 'id' | 'created_at' | 'updated_at'> & { id?: string }
         Update: Partial<Omit<ActivityRow, 'id' | 'created_at' | 'updated_at'>>
-        Relationships: [
-          {
-            foreignKeyName: 'activities_destination_id_fkey'
-            columns:        ['destination_id']
-            referencedRelation: 'destinations'
-            referencedColumns:  ['id']
-          }
-        ]
+        Relationships: [{ foreignKeyName: 'activities_destination_id_fkey'; columns: ['destination_id']; referencedRelation: 'destinations'; referencedColumns: ['id'] }]
       }
       reviews: {
         Row:    ReviewRow
         Insert: Omit<ReviewRow, 'id' | 'created_at' | 'updated_at'> & { id?: string; approved?: boolean }
         Update: Partial<Omit<ReviewRow, 'id' | 'created_at' | 'updated_at'>>
-        Relationships: [
-          {
-            foreignKeyName: 'reviews_destination_id_fkey'
-            columns:        ['destination_id']
-            referencedRelation: 'destinations'
-            referencedColumns:  ['id']
-          }
-        ]
+        Relationships: [{ foreignKeyName: 'reviews_destination_id_fkey'; columns: ['destination_id']; referencedRelation: 'destinations'; referencedColumns: ['id'] }]
+      }
+      apps: {
+        Row:    AppRow
+        Insert: Omit<AppRow, 'id' | 'created_at' | 'updated_at'> & { id?: string; published?: boolean }
+        Update: Partial<Omit<AppRow, 'id' | 'created_at' | 'updated_at'>>
+        Relationships: []
+      }
+      app_reviews: {
+        Row:    AppReviewRow
+        Insert: Omit<AppReviewRow, 'id' | 'created_at' | 'updated_at'> & { id?: string; approved?: boolean }
+        Update: Partial<Omit<AppReviewRow, 'id' | 'created_at' | 'updated_at'>>
+        Relationships: [{ foreignKeyName: 'app_reviews_app_id_fkey'; columns: ['app_id']; referencedRelation: 'apps'; referencedColumns: ['id'] }]
       }
     }
     Views: {
@@ -172,9 +211,13 @@ export type Database = {
         Row: DestinationWithStats
         Relationships: []
       }
+      apps_with_stats: {
+        Row: AppWithStats
+        Relationships: []
+      }
     }
-    Functions:  Record<string, never>
-    Enums:      Record<string, never>
+    Functions:      Record<string, never>
+    Enums:          Record<string, never>
     CompositeTypes: Record<string, never>
   }
 }
