@@ -19,7 +19,7 @@ function KanjiLayer() {
       {chars.map((char, i) => (
         <motion.span
           key={i}
-          className="absolute text-white/[0.025] font-display"
+          className="absolute text-white/2.5 font-display"
           style={{
             fontSize: `${40 + (i % 4) * 30}px`,
             left:     `${(i / chars.length) * 95}%`,
