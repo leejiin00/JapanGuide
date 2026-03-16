@@ -1,6 +1,14 @@
 // lib/queries.ts
 import { createClient } from '@/lib/supabase/server'
-import type { DestinationFull, DestinationWithStats, ReviewInsert, ReviewRow } from '@/types/database'
+import type {
+  DestinationFull,
+  DestinationWithStats,
+  ReviewInsert,
+  ReviewRow,
+  AppWithStats,
+  AppFull,
+  AppCategory,
+} from '@/types/database'
 
 // ─── Destinations ─────────────────────────────────────────────
 
@@ -87,7 +95,7 @@ export async function getAllSlugs(): Promise<string[]> {
   return (data ?? []).map((d) => (d as { slug: string }).slug)
 }
 
-// ─── Reviews ──────────────────────────────────────────────────
+// ─── Reviews destinations ─────────────────────────────────────
 
 export async function getApprovedReviews(destinationId: string): Promise<ReviewRow[]> {
   const { createAdminClient } = await import('@/lib/supabase/server')
@@ -127,6 +135,86 @@ export async function submitReview(review: ReviewInsert) {
   return { success: true, data }
 }
 
+// ─── Apps ─────────────────────────────────────────────────────
+
+/**
+ * Toutes les apps publiées avec leurs stats.
+ * Optionnellement filtrées par catégorie.
+ */
+export async function getApps(category?: AppCategory): Promise<AppWithStats[]> {
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
+
+  let query = supabase
+    .from('apps_with_stats')
+    .select('*')
+    .order('essential', { ascending: false })
+    .order('sort_order', { ascending: true })
+
+  if (category) {
+    query = query.eq('category', category)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('[getApps]', error.message)
+    return []
+  }
+
+  return (data ?? []) as AppWithStats[]
+}
+
+/**
+ * Toutes les apps groupées par catégorie.
+ * Utilisé pour la page /apps complète.
+ */
+export async function getAppsGrouped(): Promise<Record<AppCategory, AppWithStats[]>> {
+  const apps = await getApps()
+
+  const grouped: Record<string, AppWithStats[]> = {
+    transport:     [],
+    traduction:    [],
+    paiement:      [],
+    hebergement:   [],
+    nourriture:    [],
+    communication: [],
+    culture:       [],
+  }
+
+  apps.forEach((app) => {
+    if (grouped[app.category]) {
+      grouped[app.category].push(app)
+    }
+  })
+
+  return grouped as Record<AppCategory, AppWithStats[]>
+}
+
+/**
+ * Une app par son slug avec ses avis approuvés.
+ */
+export async function getAppBySlug(slug: string): Promise<AppFull | null> {
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const supabase = createAdminClient()
+
+  const { data, error } = await supabase
+    .from('apps')
+    .select('*, app_reviews(*)')
+    .eq('slug', slug)
+    .eq('published', true)
+    .eq('app_reviews.approved', true)
+    .order('created_at', { referencedTable: 'app_reviews', ascending: false })
+    .single()
+
+  if (error) {
+    if (error.code !== 'PGRST116') console.error('[getAppBySlug]', error.message)
+    return null
+  }
+
+  return data as unknown as AppFull
+}
+
 // ─── Admin ────────────────────────────────────────────────────
 
 export async function getPendingReviews() {
@@ -145,15 +233,15 @@ export async function getPendingReviews() {
   }
 
   return (data ?? []) as unknown as Array<{
-    id: string
-    author: string
-    country: string
-    flag: string
-    rating: number
-    review_date: string
-    body: string
-    highlight: string
-    created_at: string
+    id:           string
+    author:       string
+    country:      string
+    flag:         string
+    rating:       number
+    review_date:  string
+    body:         string
+    highlight:    string
+    created_at:   string
     destinations: { name: string; slug: string } | null
   }>
 }
