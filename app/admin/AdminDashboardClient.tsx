@@ -1,10 +1,13 @@
 'use client';
+// Cette partie là sert à indiquer qu'on est sur un Client Component, nécessaire car on gère des états locaux (useState) et des interactions au clic pour modérer les avis.
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+// Cette partie concerne la définition stricte des propriétés (props) que ce composant va recevoir depuis le serveur. 
+// J'ai fait ça pour garantir que TypeScript vérifie bien qu'on passe les bons chiffres pour les statistiques.
 interface Stats {
   destinations:   number
   hotels:         number
@@ -30,6 +33,8 @@ interface Props {
   pendingReviews: PendingReview[]
 }
 
+// Cette partie là sert à créer un petit composant réutilisable uniquement dans ce fichier. 
+// J'ai fait ça pour éviter de dupliquer quatre fois le même bloc de code (les classes Tailwind, les animations framer-motion) pour chaque statistique en haut du dashboard.
 function StatCard({ value, label, icon, color }: { value: number; label: string; icon: string; color: string }) {
   return (
     <motion.div
@@ -48,9 +53,12 @@ function StatCard({ value, label, icon, color }: { value: number; label: string;
 
 export default function AdminDashboardClient({ stats, pendingReviews: initialReviews }: Props) {
   const router = useRouter()
+  // Cette partie concerne l'initialisation de l'état local avec les données venues du serveur.
+  // J'ai fait ça pour pouvoir retirer un avis de la liste instantanément (via setReviews) quand l'admin clique sur "Approuver" ou "Supprimer".
   const [reviews, setReviews]   = useState<PendingReview[]>(initialReviews)
   const [processing, setProc]   = useState<string | null>(null)
 
+  // Cette partie concerne l'approbation rapide d'un avis depuis le dashboard. C'est la même logique que sur la page complète des avis.
   const handleApprove = async (reviewId: string) => {
     setProc(reviewId)
     const supabase = createClient()
@@ -61,6 +69,7 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
     router.refresh()
   }
 
+  // Cette partie là sert à supprimer un avis depuis le dashboard.
   const handleDelete = async (reviewId: string) => {
     setProc(reviewId)
     const supabase = createClient()
@@ -78,6 +87,7 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Cette partie là sert à afficher les 4 cartes de statistiques en appelant le sous-composant StatCard qu'on a défini plus haut. */}
         <StatCard value={stats.destinations}   label="Destinations"    icon="🗾" color="#fb923c" />
         <StatCard value={stats.hotels}         label="Hôtels"          icon="🏨" color="#c084fc" />
         <StatCard value={stats.activities}     label="Activités"       icon="🎌" color="#38bdf8" />
@@ -97,6 +107,7 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
           )}
         </div>
 
+        {/* Cette partie concerne l'affichage conditionnel : on affiche un gros "✅" si la liste des avis en attente (reviews) est vide. */}
         {reviews.length === 0 ? (
           <div className="rounded-2xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-4xl mb-3">✅</p>
@@ -109,6 +120,7 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
                 key={review.id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
+                // Cette partie là sert à créer un effet d'apparition en cascade pour les avis en attente, en utilisant l'index (i) pour retarder l'animation.
                 transition={{ delay: i * 0.06 }}
                 className="rounded-2xl p-6"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -167,6 +179,8 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
       </div>
 
       <div className="grid grid-cols-2 gap-4">
+        {/* Cette partie concerne les liens de navigation rapides vers les autres sections de l'administration. 
+            Utiliser une balise <a> ou un composant <Link> de Next.js imbriqué dans une motion.a permet d'ajouter une animation au survol très facilement. */}
         {[
           { href: '/admin/destinations', label: 'Gérer les Destinations', icon: '🗾', color: '#fb923c' },
           { href: '/admin/avis',         label: 'Tous les Avis',          icon: '⭐', color: '#f472b6' },

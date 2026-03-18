@@ -13,9 +13,12 @@ import type {
 // ─── Destinations ─────────────────────────────────────────────
 
 export async function getDestinations(): Promise<DestinationWithStats[]> {
+  // Cette partie concerne l'initialisation du client de base de données.
+  // Tu importes dynamiquement le client "Admin" (qui utilise probablement la Service Role Key de Supabase, ignorant les règles de sécurité RLS).
   const { createAdminClient } = await import('@/lib/supabase/server')
   const supabase = createAdminClient()
 
+  // J'ai fait ça pour utiliser une vue SQL ('destinations_with_stats') plutôt que la table de base. C'est une excellente pratique pour éviter de faire des "COUNT" lourds côté serveur Node.js.
   const { data, error } = await supabase
     .from('destinations_with_stats')
     .select('*')
@@ -35,6 +38,8 @@ export async function getDestinationBySlug(slug: string): Promise<DestinationFul
 
   const { data, error } = await supabase
     .from('destinations')
+    // Cette partie concerne une jointure profonde (Deep Join).
+    // J'ai fait ça pour récupérer en une seule requête réseau la destination ET tous ses hôtels, activités et avis. C'est ultra-performant.
     .select(`
       *,
       hotels ( * ),
@@ -43,19 +48,22 @@ export async function getDestinationBySlug(slug: string): Promise<DestinationFul
     `)
     .eq('slug', slug)
     .eq('published', true)
+    // C'est très malin d'utiliser "referencedTable" pour trier les données des tables enfants (les hôtels et activités) directement depuis la requête SQL parente !
     .order('sort_order', { referencedTable: 'hotels',     ascending: true })
     .order('sort_order', { referencedTable: 'activities', ascending: true })
     .order('created_at', { referencedTable: 'reviews',    ascending: false })
-    .eq('reviews.approved', true)
-    .single()
+    .eq('reviews.approved', true) // On filtre les enfants : uniquement les avis approuvés.
+    .single() // On exige un seul résultat.
 
   if (error) {
+    // J'ai fait ça car l'erreur "PGRST116" signifie "0 ligne retournée par .single()". Ce n'est pas un vrai "bug", ça veut juste dire que la destination n'existe pas (404). On ignore donc silencieusement cette erreur spécifique.
     if (error.code !== 'PGRST116') {
       console.error('[getDestinationBySlug]', error.message)
     }
     return null
   }
 
+  // L'utilisation de "as unknown as" permet de forcer TypeScript à accepter le type complexe de notre jointure.
   return data as unknown as DestinationFull
 }
 
@@ -65,6 +73,7 @@ export async function getDestinationMeta(slug: string) {
 
   const { data, error } = await supabase
     .from('destinations')
+    // Cette partie là sert à faire ce qu'on appelle une "projection" partielle. On ne demande à la BDD que les colonnes dont on a besoin pour le Layout/SEO, ça allège le téléchargement.
     .select('id, slug, kanji, name, subtitle, region, description, tags, icon, accent_color, secondary_color, shadow_color, hero_gradient, best_months, budget, language, timezone, quick_facts')
     .eq('slug', slug)
     .eq('published', true)
@@ -117,8 +126,11 @@ export async function getApprovedReviews(destinationId: string): Promise<ReviewR
 }
 
 export async function submitReview(review: ReviewInsert) {
+  // ATTENTION ICI : Contrairement aux requêtes précédentes, on utilise le "createClient" normal (non-admin).
+  // C'est très bien : comme c'est une action déclenchée par l'utilisateur final, on veut que les règles de sécurité RLS de Supabase s'appliquent !
   const supabase = await createClient()
 
+  // On force le statut "approved" à false côté serveur, par sécurité, même si quelqu'un essayait de le forcer à true depuis le front-end.
   const payload = { ...review, approved: false }
 
   const { data, error } = await supabase
@@ -151,6 +163,7 @@ export async function getApps(category?: AppCategory): Promise<AppWithStats[]> {
     .order('essential', { ascending: false })
     .order('sort_order', { ascending: true })
 
+  // Cette partie concerne la construction dynamique de la requête SQL. Si une catégorie est fournie, on ajoute une clause "WHERE" (.eq).
   if (category) {
     query = query.eq('category', category)
   }
@@ -170,6 +183,7 @@ export async function getApps(category?: AppCategory): Promise<AppWithStats[]> {
  * Utilisé pour la page /apps complète.
  */
 export async function getAppsGrouped(): Promise<Record<AppCategory, AppWithStats[]>> {
+  // On récupère toutes les apps en une seule requête.
   const apps = await getApps()
 
   const grouped: Record<string, AppWithStats[]> = {
@@ -182,6 +196,7 @@ export async function getAppsGrouped(): Promise<Record<AppCategory, AppWithStats
     culture:       [],
   }
 
+  // Cette partie là sert à trier les applications dans leurs "tiroirs" respectifs en JavaScript, ce qui nous évite de faire 7 requêtes SQL différentes.
   apps.forEach((app) => {
     if (grouped[app.category]) {
       grouped[app.category].push(app)
@@ -223,6 +238,7 @@ export async function getPendingReviews() {
 
   const { data, error } = await supabase
     .from('reviews')
+    // Jointure vers le haut : on récupère l'avis ET le nom/slug de la destination associée.
     .select('*, destinations(name, slug)')
     .eq('approved', false)
     .order('created_at', { ascending: false })
@@ -232,6 +248,7 @@ export async function getPendingReviews() {
     return []
   }
 
+  // Un peu de forçage de type pour s'assurer que TypeScript comprend la forme du retour.
   return (data ?? []) as unknown as Array<{
     id:           string
     author:       string

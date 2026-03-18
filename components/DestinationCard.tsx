@@ -1,5 +1,6 @@
 'use client';
 
+// Cette partie là sert à utiliser des hooks d'état et d'interaction de React et Framer Motion.
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -7,15 +8,21 @@ import type { DestinationWithStats } from '@/types/database';
 
 interface Props {
   destination: DestinationWithStats;
-  index?: number;
+  index?: number; // Utilisé pour faire apparaître les cartes en cascade (delay).
 }
 
 export default function DestinationCard({ destination: dest, index = 0 }: Props) {
+  // Cette partie concerne les états de survol de la carte.
+  // J'ai fait ça pour savoir 1. Si la souris est sur la carte, et 2. Où exactement (x, y en pourcentage) pour mon effet de lumière.
   const [hovered, setHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
+  // Cette partie là sert à calculer la position exacte de la souris à l'intérieur de la carte.
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    // "getBoundingClientRect" nous donne la position de la carte par rapport à tout l'écran.
     const rect = e.currentTarget.getBoundingClientRect();
+    
+    // On calcule la position de la souris (clientX) moins la position de la carte (rect.left), qu'on transforme en pourcentage (0 à 100%) par rapport à la largeur totale de la carte (rect.width).
     setMousePos({
       x: ((e.clientX - rect.left) / rect.width) * 100,
       y: ((e.clientY - rect.top) / rect.height) * 100,
@@ -23,6 +30,7 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
   };
 
   return (
+    // Ce motion.div gère l'apparition initiale de la carte au chargement de la page (effet cascade grâce à index).
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
@@ -30,9 +38,12 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
     >
       <Link href={`/destination/${dest.slug}`} className="block group">
         <motion.div
+          // J'ai utilisé "onHoverStart" et "onHoverEnd" de Framer Motion plutôt que le "onMouseEnter" natif, car ils sont plus fiables sur certains navigateurs.
           onHoverStart={() => setHovered(true)}
           onHoverEnd={() => setHovered(false)}
           onMouseMove={handleMouseMove}
+          
+          // Cette partie concerne l'animation de la carte entière au survol. Elle se soulève (y: -8) et son ombre s'élargit.
           animate={{
             boxShadow: hovered
               ? `0 32px 80px ${dest.shadow_color}, 0 0 40px ${dest.shadow_color}60, inset 0 1px 0 rgba(255,255,255,0.12)`
@@ -47,17 +58,23 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
             transition: 'border-color 0.3s',
           }}
         >
+          {/* L'EFFET SPOTLIGHT */}
+          {/* J'ai fait ça pour dessiner un rond de couleur douce (radial-gradient) qui suit la souris. Ses coordonnées sont mises à jour par "mousePos". */}
           <motion.div className="absolute inset-0 rounded-2xl pointer-events-none" style={{
             background: `radial-gradient(circle 180px at ${mousePos.x}% ${mousePos.y}%, ${dest.accent_color}18, transparent 70%)`,
             opacity: hovered ? 1 : 0, transition: 'opacity 0.3s',
           }} />
+          
+          {/* La tache de couleur floue en haut à droite */}
           <motion.div className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl pointer-events-none"
             animate={{ opacity: hovered ? 0.25 : 0, scale: hovered ? 1.3 : 0.8 }} transition={{ duration: 0.5 }}
             style={{ background: dest.accent_color }}
           />
+          
           <div className="relative z-10 p-7">
             <div className="flex items-start justify-between mb-5">
               <div>
+                {/* Animation du Kanji : il grossit légèrement quand on survole la carte. */}
                 <motion.p className="text-5xl font-thin leading-none mb-1" style={{ color: dest.accent_color, fontFamily: 'Cormorant Garamond, serif' }}
                   animate={{ scale: hovered ? 1.04 : 1 }} transition={{ type: 'spring', stiffness: 400 }}>
                   {dest.kanji}
@@ -66,13 +83,19 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
                   {dest.region} · {dest.subtitle}
                 </p>
               </div>
+              
+              {/* Animation de l'icône : elle tourne et grossit légèrement. */}
               <motion.span className="text-3xl shrink-0" animate={{ rotate: hovered ? 8 : 0, scale: hovered ? 1.2 : 1 }} transition={{ type: 'spring', stiffness: 300 }}>
                 {dest.icon}
               </motion.span>
             </div>
+            
             <h3 className="text-2xl font-light text-white mb-3 tracking-wide" style={{ fontFamily: 'Cormorant Garamond, serif' }}>{dest.name}</h3>
+            
             <p className="text-sm leading-relaxed mb-6 line-clamp-3" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit, sans-serif' }}>{dest.description}</p>
+            
             <div className="mb-5 h-px" style={{ background: `linear-gradient(to right, ${dest.accent_color}40, transparent)` }} />
+            
             <div className="flex flex-wrap gap-2 mb-4">
               {dest.tags.slice(0, 3).map((tag) => (
                 <span key={tag} className="text-[10px] px-3 py-1 rounded-full tracking-wider" style={{ background: `${dest.accent_color}12`, border: `1px solid ${dest.accent_color}25`, color: dest.accent_color, fontFamily: 'Outfit, sans-serif' }}>
@@ -80,6 +103,8 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
                 </span>
               ))}
             </div>
+            
+            {/* Si la destination a des hôtels ou activités, on affiche les statistiques (sinon le bloc est caché). */}
             {(dest.hotel_count > 0 || dest.activity_count > 0) && (
               <div className="flex gap-4 mb-4">
                 {dest.hotel_count > 0 && <span className="text-[10px] text-white/25 font-body">{dest.hotel_count} hôtel{dest.hotel_count > 1 ? 's' : ''}</span>}
@@ -87,6 +112,7 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
                 {dest.avg_rating && <span className="text-[10px] font-body" style={{ color: dest.accent_color }}>★ {dest.avg_rating}</span>}
               </div>
             )}
+            
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div>
@@ -99,6 +125,8 @@ export default function DestinationCard({ destination: dest, index = 0 }: Props)
                   <p className="text-xs text-white/60" style={{ fontFamily: 'Outfit, sans-serif' }}>{dest.budget}</p>
                 </div>
               </div>
+              
+              {/* Le bouton "Explorer ->" se décale vers la droite quand on survole la carte. */}
               <motion.div className="flex items-center gap-2 text-xs tracking-widest uppercase font-medium" style={{ color: dest.accent_color, fontFamily: 'Outfit, sans-serif' }} animate={{ x: hovered ? 6 : 0 }} transition={{ type: 'spring', stiffness: 400 }}>
                 Explorer <motion.span animate={{ x: hovered ? 4 : 0 }} transition={{ type: 'spring', stiffness: 400 }}>→</motion.span>
               </motion.div>

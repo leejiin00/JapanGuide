@@ -1,11 +1,13 @@
 'use client';
+// Cette partie là sert à indiquer qu'on est sur le navigateur (client-side) car on a besoin de hooks interactifs (usePathname) et d'animations.
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
-// Type local allégé (ce que le Server Component nous passe)
+// Cette partie concerne la définition du contrat de données. 
+// J'ai fait ça pour définir exactement quelles informations de la destination (le nom, les couleurs, etc.) le Server Component parent doit passer à ce Layout visuel.
 interface DestMeta {
   slug:         string;
   kanji:        string;
@@ -22,22 +24,25 @@ interface DestMeta {
 
 interface Props {
   dest:     DestMeta;
-  children: ReactNode;
+  children: ReactNode; // 'children' représentera le contenu spécifique de la page (Hôtels, Activités ou Avis) qui viendra s'insérer en dessous de l'en-tête.
 }
 
+// Cette partie là sert à configurer les liens du sous-menu de la destination.
 const subNav = [
   { segment: '',          label: "Vue d'ensemble", icon: '🗾' },
-  { segment: 'hotels',    label: 'Hôtels',          icon: '🏨' },
+  { segment: 'hotels',    label: 'Hôtels',         icon: '🏨' },
   { segment: 'activites', label: 'Activités',        icon: '🎌' },
   { segment: 'avis',      label: 'Avis',             icon: '⭐' },
 ];
 
 export default function DestinationLayoutClient({ dest, children }: Props) {
+  // J'ai fait ça pour récupérer l'URL exacte sur laquelle l'utilisateur se trouve (ex: "/destination/tokyo/hotels") afin de pouvoir allumer le bon onglet.
   const pathname = usePathname();
 
   return (
     <div className="min-h-screen">
       {/* ── Header strip ── */}
+      {/* Cette partie concerne l'en-tête visuel global qui sera commun à toutes les sous-pages de cette destination. */}
       <div className="pt-24 pb-0 relative overflow-hidden" style={{ background: dest.hero_gradient }}>
         {/* Subtle noise */}
         <div
@@ -48,6 +53,7 @@ export default function DestinationLayoutClient({ dest, children }: Props) {
 
         <div className="max-w-7xl mx-auto px-6 py-10 relative z-10">
           {/* Breadcrumb */}
+          {/* Cette partie là sert à afficher le fil d'Ariane pour aider l'utilisateur à se repérer dans le site. */}
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -124,8 +130,12 @@ export default function DestinationLayoutClient({ dest, children }: Props) {
             className="flex gap-1 overflow-x-auto pb-px"
             aria-label="Sections de la destination"
           >
+            {/* Cette partie là sert à générer les onglets de navigation. */}
             {subNav.map(({ segment, label, icon }) => {
+              // On construit l'URL de l'onglet. Si le segment est vide (Accueil de la destination), on n'ajoute pas de slash.
               const href     = `/destination/${dest.slug}${segment ? `/${segment}` : ''}`;
+              
+              // J'ai fait ça pour déterminer si l'onglet doit être considéré comme "actif". La logique diffère un peu pour l'accueil de la destination par rapport aux sous-pages.
               const isActive = segment
                 ? pathname === href
                 : pathname === `/destination/${dest.slug}`;
@@ -140,6 +150,8 @@ export default function DestinationLayoutClient({ dest, children }: Props) {
                   >
                     {isActive && (
                       <motion.span
+                        // Cette partie concerne l'animation de la petite barre colorée sous l'onglet actif.
+                        // L'astuce "layoutId" de Framer Motion permet à cette barre de "glisser" magiquement d'un onglet à l'autre quand l'utilisateur navigue !
                         layoutId="dest-tab-indicator"
                         className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
                         style={{ background: dest.accent_color }}
@@ -158,6 +170,7 @@ export default function DestinationLayoutClient({ dest, children }: Props) {
 
       {/* ── Page content ── */}
       <div className="max-w-7xl mx-auto px-6 py-14">
+        {/* Cette partie concerne l'injection de la sous-page demandée par l'utilisateur (la grille des hôtels, la liste des activités, etc.). */}
         {children}
       </div>
     </div>

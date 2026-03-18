@@ -1,4 +1,5 @@
 'use client';
+// Cette partie là sert à autoriser l'interactivité dans le navigateur, indispensable pour gérer tous nos états locaux et les requêtes Supabase depuis le client.
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -10,26 +11,39 @@ interface Props { destinations: DestinationWithStats[] }
 
 export default function AdminDestinationsClient({ destinations: initial }: Props) {
   const router = useRouter();
+  
+  // Cette partie concerne la gestion complexe de l'état du tableau.
   const [dests, setDests] = useState(initial);
+  
+  // J'ai fait ça pour garder en mémoire l'ID de la destination en train d'être publiée/dépubliée, afin de bloquer uniquement SON bouton (et pas tout le tableau).
   const [toggling, setToggling] = useState<string | null>(null);
+  
+  // J'ai fait ça pour savoir quelle ligne du tableau doit se transformer en formulaire (inputs). Si c'est null, tout est en mode "lecture".
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBudget, setEditBudget] = useState('');
   const [editBestMonths, setEditBestMonths] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // Cette partie là sert à publier ou dépublier une destination en un clic.
   const togglePublish = async (id: string, current: boolean) => {
     setToggling(id);
     const supabase = createClient();
+    
+    // On inverse la valeur actuelle (!current) dans la base de données.
     const { error } = await supabase.from('destinations').update({ published: !current }).eq('id', id);
+    
     if (!error) {
+      // J'ai fait ça pour mettre à jour l'interface instantanément (Optimistic UI) si la requête réussit, sans avoir à recharger toute la liste depuis le serveur.
       setDests((prev) => prev.map((d) => d.id === id ? { ...d, published: !current } : d));
     }
     setToggling(null);
     router.refresh();
   };
 
+  // Cette partie concerne le passage d'une ligne en mode "Édition".
   const startEdit = (dest: DestinationWithStats) => {
     setEditingId(dest.id);
+    // On pré-remplit les champs texte avec les valeurs actuelles de la base de données.
     setEditBudget(dest.budget);
     setEditBestMonths(dest.best_months);
   };
@@ -41,8 +55,11 @@ export default function AdminDestinationsClient({ destinations: initial }: Props
       .from('destinations')
       .update({ budget: editBudget, best_months: editBestMonths })
       .eq('id', id);
+      
     if (!error) {
+      // Mise à jour locale du tableau après la sauvegarde.
       setDests((prev) => prev.map((d) => d.id === id ? { ...d, budget: editBudget, best_months: editBestMonths } : d));
+      // On referme le mode édition.
       setEditingId(null);
     }
     setSaving(false);
@@ -102,6 +119,7 @@ export default function AdminDestinationsClient({ destinations: initial }: Props
             </div>
 
             {/* Budget */}
+            {/* Cette partie là sert à afficher conditionnellement soit le texte normal, soit le champ input si on est en mode édition. */}
             <div className="col-span-2">
               {editingId === dest.id ? (
                 <input value={editBudget} onChange={(e) => setEditBudget(e.target.value)} style={inputStyle} />
@@ -128,6 +146,7 @@ export default function AdminDestinationsClient({ destinations: initial }: Props
 
             {/* Published toggle */}
             <div className="col-span-1 flex justify-center">
+              {/* J'ai fait ça pour créer un bouton "Switch" (interrupteur) personnalisé au lieu d'utiliser une simple case à cocher (checkbox). */}
               <motion.button
                 onClick={() => togglePublish(dest.id, dest.published)}
                 disabled={toggling === dest.id}
@@ -137,6 +156,7 @@ export default function AdminDestinationsClient({ destinations: initial }: Props
                 style={{ background: dest.published ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.1)', border: `1px solid ${dest.published ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.15)'}` }}
                 title={dest.published ? 'Dépublier' : 'Publier'}
               >
+                {/* La pastille à l'intérieur du switch s'anime sur l'axe X (gauche/droite) en fonction de l'état "published". */}
                 <motion.span
                   animate={{ x: dest.published ? 18 : 2 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}

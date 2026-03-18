@@ -7,16 +7,23 @@ import { createClient } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  
+  // Cette partie concerne la gestion de l'état du formulaire (les variables locales du composant).
+  // J'ai fait ça pour garder une trace de ce que l'utilisateur tape dans les champs de texte, ainsi que pour savoir si on doit afficher un message d'erreur ou un état de chargement.
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
+    // Cette partie là sert à empêcher le comportement par défaut du navigateur (qui rechargerait toute la page au clic sur un bouton submit).
     e.preventDefault();
+    
+    // J'ai fait ça pour indiquer à l'interface de se mettre en mode "attente" (bouton grisé) et pour effacer les éventuelles erreurs précédentes.
     setLoading(true);
     setError('');
 
+    // Cette partie concerne l'appel au service d'authentification.
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -26,6 +33,8 @@ export default function AdminLoginPage() {
       return;
     }
 
+    // Cette partie là sert à rediriger l'administrateur vers son tableau de bord une fois la connexion réussie.
+    // Le "router.refresh()" force Next.js à re-calculer la route serveur pour bien prendre en compte le nouveau cookie de session.
     router.push('/admin');
     router.refresh();
   };
@@ -61,6 +70,7 @@ export default function AdminLoginPage() {
           </div>
 
           {/* Form */}
+          {/* Cette partie concerne la liaison entre l'interface et notre fonction React. Le "onSubmit" intercepte la validation du formulaire (clic sur le bouton ou touche Entrée). */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label className="block text-[10px] uppercase tracking-wider text-white/30 font-body mb-2">
@@ -69,6 +79,7 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 value={email}
+                // Cette partie là sert à mettre à jour notre variable d'état "email" à chaque fois que l'utilisateur tape une lettre au clavier.
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-xl text-sm text-white font-body outline-none transition-all"
@@ -76,6 +87,7 @@ export default function AdminLoginPage() {
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.1)',
                 }}
+                // J'ai fait ça pour ajouter un effet visuel dynamique quand l'utilisateur clique dans le champ (focus) ou clique en dehors (blur).
                 onFocus={(e) => e.target.style.borderColor = 'rgba(251,146,60,0.5)'}
                 onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                 placeholder="admin@nihon.guide"
@@ -102,6 +114,7 @@ export default function AdminLoginPage() {
               />
             </div>
 
+            {/* Cette partie concerne l'affichage conditionnel. On n'affiche ce bloc <motion.p> QUE si la variable "error" contient du texte. */}
             {error && (
               <motion.p
                 initial={{ opacity: 0, y: -5 }}

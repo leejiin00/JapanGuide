@@ -26,6 +26,8 @@ function Stars({
 }: {
   n: number; color: string; interactive?: boolean; onSelect?: (v: number) => void
 }) {
+  // Cette partie concerne la gestion du survol des étoiles par la souris.
+  // J'ai fait ça pour offrir un retour visuel quand l'utilisateur choisit sa note : l'étoile survolée et toutes les précédentes se colorent, mais si on retire la souris (onMouseLeave), on repasse à la note réellement cliquée (n).
   const [hov, setHov] = useState(0)
   return (
     <div className="flex gap-1">
@@ -50,24 +52,27 @@ function Stars({
 }
 
 const COUNTRIES = [
-  { name: 'France',       flag: '🇫🇷' },
-  { name: 'Belgique',     flag: '🇧🇪' },
-  { name: 'Suisse',       flag: '🇨🇭' },
-  { name: 'Canada',       flag: '🇨🇦' },
-  { name: 'Allemagne',    flag: '🇩🇪' },
-  { name: 'Espagne',      flag: '🇪🇸' },
-  { name: 'Italie',       flag: '🇮🇹' },
-  { name: 'Royaume-Uni',  flag: '🇬🇧' },
-  { name: 'États-Unis',   flag: '🇺🇸' },
-  { name: 'Australie',    flag: '🇦🇺' },
-  { name: 'Japon',        flag: '🇯🇵' },
-  { name: 'Autre',        flag: '🌍' },
+  { name: 'France',      flag: '🇫🇷' },
+  { name: 'Belgique',    flag: '🇧🇪' },
+  { name: 'Suisse',      flag: '🇨🇭' },
+  { name: 'Canada',      flag: '🇨🇦' },
+  { name: 'Allemagne',   flag: '🇩🇪' },
+  { name: 'Espagne',     flag: '🇪🇸' },
+  { name: 'Italie',      flag: '🇮🇹' },
+  { name: 'Royaume-Uni', flag: '🇬🇧' },
+  { name: 'États-Unis',  flag: '🇺🇸' },
+  { name: 'Australie',   flag: '🇦🇺' },
+  { name: 'Japon',       flag: '🇯🇵' },
+  { name: 'Autre',       flag: '🌍' },
 ]
 
 export default function AvisClient({ dest, reviews }: Props) {
   const [showForm,   setShowForm]   = useState(false)
   const [submitted,  setSubmitted]  = useState(false)
   const [serverError, setServerError] = useState('')
+  
+  // Cette partie là sert à gérer proprement l'appel au serveur sans figer l'interface.
+  // J'ai fait ça pour utiliser notre Server Action (submitReviewAction). `isPending` passe à "true" pendant que le serveur travaille, ce qui nous permet de bloquer le bouton d'envoi et d'afficher "Envoi en cours...".
   const [isPending,  startTransition] = useTransition()
 
   // Champs du formulaire
@@ -77,6 +82,8 @@ export default function AvisClient({ dest, reviews }: Props) {
   const [body,      setBody]      = useState('')
   const [highlight, setHighlight] = useState('')
 
+  // Cette partie concerne le calcul de la moyenne des notes.
+  // C'est ce qu'on appelle du "Derived State" : au lieu de stocker la moyenne dans un useState, on la recalcule automatiquement à partir du tableau `reviews` à chaque fois que le composant s'affiche.
   const avgRating = reviews.length
     ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length
     : 0
@@ -87,7 +94,9 @@ export default function AvisClient({ dest, reviews }: Props) {
     e.preventDefault()
     setServerError('')
 
+    // Cette partie là sert à envelopper notre appel serveur. React sait ainsi que c'est une transition d'état non-bloquante.
     startTransition(async () => {
+      // On retrouve ici la Server Action de ton tout premier fichier !
       const result = await submitReviewAction({
         destination_id:   dest.id,
         destination_slug: dest.slug,
@@ -212,6 +221,8 @@ export default function AvisClient({ dest, reviews }: Props) {
       )}
 
       {/* ── CTA / Formulaire / Confirmation ── */}
+      {/* Cette partie concerne la transition entre les trois écrans possibles (Bouton, Formulaire, Succès). */}
+      {/* J'ai fait ça (mode="wait") pour dire à l'animation d'attendre que l'élément qui disparaît soit totalement parti avant de faire apparaître le nouveau. Ça évite que le formulaire et le message de succès se superposent pendant l'animation. */}
       <AnimatePresence mode="wait">
 
         {/* Confirmation après envoi */}

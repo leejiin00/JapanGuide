@@ -2,10 +2,13 @@
 
 // app/apps/AppsPageClient.tsx
 
+// Cette partie là sert à indiquer à Next.js qu'on est côté client. Indispensable pour utiliser useState, framer-motion et réagir aux clics de l'utilisateur.
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AppWithStats, AppCategory } from '@/types/database'
 
+// Cette partie concerne la configuration de tes catégories.
+// J'ai fait ça pour séparer les données statiques du composant React, ce qui rend le code beaucoup plus propre et facile à modifier si tu ajoutes une catégorie plus tard.
 const CATEGORIES: {
   key:   AppCategory | 'all'
   label: string
@@ -36,6 +39,7 @@ interface Props {
   appsByCategory: Record<AppCategory, AppWithStats[]>
 }
 
+// Cette partie là sert à créer le sous-composant qui affiche une seule application.
 function AppCard({
   app,
   index,
@@ -45,6 +49,7 @@ function AppCard({
   index: number
   isFirstCategory: boolean
 }) {
+  // J'ai fait ça pour gérer l'état d'ouverture/fermeture de la carte (le système d'accordéon).
   const [expanded, setExpanded] = useState(false)
 
   const priceColor =
@@ -53,6 +58,7 @@ function AppCard({
 
   // Cartes dans le viewport dès le chargement → animate directement
   // Cartes hors viewport → whileInView pour déclencher au scroll
+  // Cette partie concerne l'optimisation des animations. J'ai fait ça pour éviter que le navigateur calcule les animations des éléments qui ne sont pas encore visibles à l'écran.
   const animationProps = isFirstCategory
     ? {
         initial:    { opacity: 0, y: 24 },
@@ -131,6 +137,7 @@ function AppCard({
           </div>
         </div>
 
+        {/* Cette partie là sert à animer le déploiement de la zone d'informations supplémentaires. */}
         <AnimatePresence initial={false}>
           {expanded && (
             <motion.div
@@ -166,6 +173,7 @@ function AppCard({
                       href={app.url_appstore}
                       target="_blank"
                       rel="noopener noreferrer"
+                      // J'ai fait ça pour éviter que le clic sur ce lien déclenche aussi le clic de la div parente (qui fermerait la carte).
                       onClick={(e) => e.stopPropagation()}
                       whileHover={{ scale: 1.04, boxShadow: `0 0 20px ${app.accent_color}30` }}
                       whileTap={{ scale: 0.97 }}
@@ -226,11 +234,13 @@ function AppCard({
 }
 
 export default function AppsPageClient({ appsByCategory }: Props) {
+  // Cette partie concerne le filtre de catégorie sélectionné par l'utilisateur.
   const [activeCategory, setActiveCategory] = useState<AppCategory | 'all'>('all')
 
   const allApps = Object.values(appsByCategory).flat()
   const essentialApps = allApps.filter((a) => a.essential)
 
+  // Cette partie là sert à définir quelles catégories doivent être affichées en dessous selon le bouton cliqué dans le menu.
   const categoriesToShow: AppCategory[] =
     activeCategory === 'all'
       ? (Object.keys(appsByCategory) as AppCategory[]).filter((c) => appsByCategory[c].length > 0)
@@ -323,6 +333,7 @@ export default function AppsPageClient({ appsByCategory }: Props) {
                     color:      activeCategory === key ? color : 'rgba(255,255,255,0.3)',
                   }}
                 >
+                  {/* J'ai fait ça pour afficher le nombre d'applications pour chaque filtre. */}
                   {appsByCategory[key as AppCategory]?.length ?? 0}
                 </span>
               )}

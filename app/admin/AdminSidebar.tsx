@@ -1,4 +1,5 @@
 'use client';
+// Cette partie là sert à indiquer à Next.js qu'on est côté client. C'est obligatoire ici car on utilise des hooks liés au navigateur (usePathname, useRouter) et des événements utilisateurs (onClick).
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -14,12 +15,16 @@ const navItems = [
 ];
 
 export default function AdminSidebar({ userEmail }: Props) {
+  // Cette partie concerne l'accès aux informations de l'URL actuelle.
   const pathname = usePathname();
   const router   = useRouter();
 
+  // Cette partie là sert à déconnecter l'utilisateur proprement de Supabase.
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    
+    // J'ai fait ça pour renvoyer l'utilisateur sur la page de connexion une fois sa session détruite, et pour forcer Next.js à purger son cache de route.
     router.push('/admin/login');
     router.refresh();
   };
@@ -45,7 +50,10 @@ export default function AdminSidebar({ userEmail }: Props) {
       {/* Nav */}
       <nav className="flex-1 space-y-1">
         {navItems.map(({ href, label, icon }) => {
+          // Cette partie concerne la logique de surbrillance du menu.
+          // J'ai fait ça pour vérifier si l'URL actuelle (pathname) correspond au lien du bouton. La petite subtilité avec le "startsWith" permet de garder le menu "Destinations" allumé même si on est sur "/admin/destinations/tokyo".
           const isActive = href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
+          
           return (
             <Link key={href} href={href}>
               <motion.div

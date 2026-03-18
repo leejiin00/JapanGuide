@@ -1,4 +1,5 @@
 'use client';
+// Cette partie là sert à indiquer qu'on utilise des outils front-end interactifs, principalement ici pour les animations (framer-motion).
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -11,6 +12,7 @@ export default function DestinationOverviewClient({ dest }: Props) {
     <div className="space-y-16">
 
       {/* ── Description ── */}
+      {/* Cette partie concerne le bloc de présentation principal de la destination (le texte et les infos pratiques). */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -31,6 +33,7 @@ export default function DestinationOverviewClient({ dest }: Props) {
         </div>
 
         {/* Quick facts */}
+        {/* J'ai fait ça (self-start) pour empêcher ce bloc gris de s'étirer verticalement pour faire la même taille que le texte à côté. Il prendra juste la hauteur dont il a besoin. */}
         <div
           className="md:col-span-2 rounded-2xl p-7 self-start"
           style={{
@@ -43,6 +46,7 @@ export default function DestinationOverviewClient({ dest }: Props) {
             Infos Pratiques
           </p>
           <div className="space-y-4">
+            {/* Cette partie là sert à créer une petite table de données proprement en bouclant sur un tableau généré à la volée. Ça évite de copier-coller 5 fois la même structure HTML ! */}
             {[
               { label: 'Région',            value: dest.region },
               { label: 'Meilleure période', value: dest.best_months },
@@ -61,6 +65,7 @@ export default function DestinationOverviewClient({ dest }: Props) {
 
           {/* Key numbers */}
           <div className="grid grid-cols-2 gap-3">
+            {/* J'ai fait ça (as {...}[]) car TypeScript a parfois du mal avec le typage des champs JSON ou JSONB venant de Supabase. Ça force le type correct. */}
             {(dest.quick_facts as { label: string; value: string }[]).map(({ label, value }) => (
               <div key={label} className="rounded-xl p-3 text-center" style={{ background: `${dest.accent_color}08` }}>
                 <p className="font-display font-thin text-xl mb-0.5" style={{ color: dest.accent_color }}>{value}</p>
@@ -75,6 +80,7 @@ export default function DestinationOverviewClient({ dest }: Props) {
       <div className="h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)' }} />
 
       {/* ── Section teasers ── */}
+      {/* Cette partie concerne les 3 gros boutons ("Hôtels", "Activités", "Avis") qui renvoient vers les sous-pages. */}
       <div>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8">
           <p className="text-[10px] tracking-[0.35em] uppercase font-body mb-2" style={{ color: dest.accent_color }}>Aperçu</p>
@@ -90,10 +96,12 @@ export default function DestinationOverviewClient({ dest }: Props) {
             <motion.div
               key={segment}
               initial={{ opacity: 0, y: 20 }}
+              // L'animation ne se lance que quand l'élément apparaît à l'écran (whileInView).
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
             >
+              {/* Le composant <Link> de Next.js permet une navigation ultra-rapide sans recharger toute la page web. */}
               <Link href={`/destination/${dest.slug}/${segment}`}>
                 <motion.div
                   whileHover={{ y: -6, boxShadow: `0 20px 60px ${dest.shadow_color}` }}
@@ -116,6 +124,7 @@ export default function DestinationOverviewClient({ dest }: Props) {
       </div>
 
       {/* ── Activities preview ── */}
+      {/* Cette partie là sert à afficher un petit aperçu (une preview) des activités proposées, pour donner envie à l'utilisateur de cliquer sur l'onglet complet. */}
       <div>
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           className="text-[10px] tracking-[0.35em] uppercase font-body mb-8" style={{ color: dest.accent_color }}>

@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 interface Choice {
   label:  string
   icon:   string
+  // Ce record permet d'attribuer des points à différentes destinations pour un même choix. Ex: Plage -> Okinawa +3 pts, Hiroshima +1 pt.
   scores: Record<string, number>
 }
 
@@ -28,6 +29,7 @@ interface Result {
   icon:        string
 }
 
+// Cette partie concerne la base de données de notre quiz (questions et points). C'est statique, donc on la met en dehors du composant pour ne pas la recréer à chaque rendu.
 const QUESTIONS: Question[] = [
   {
     kanji:    '旅',
@@ -61,29 +63,40 @@ const QUESTIONS: Question[] = [
   },
 ]
 
+// Cette partie là sert de dictionnaire (lookup table) pour récupérer les belles infos de la destination gagnante.
 const RESULTS: Record<string, Result> = {
   kyoto:    { slug: 'kyoto',    kanji: '京都', name: 'Kyoto',    subtitle: "L'Âme Ancienne",       reason: 'Vous cherchez la profondeur, le silence et la beauté millénaire. Kyoto vous attend au détour de chaque ruelle pavée.',                                accentColor: '#c084fc', icon: '⛩️' },
-  tokyo:    { slug: 'tokyo',    kanji: '東京', name: 'Tokyo',    subtitle: 'Lumières Infinies',     reason: "Vous vibrez avec l'énergie des villes vivantes. Tokyo est la seule métropole qui ne vous laissera jamais indifférent.",                          accentColor: '#38bdf8', icon: '🏙️' },
-  hakone:   { slug: 'hakone',   kanji: '箱根', name: 'Hakone',   subtitle: 'Le Souffle du Fuji',    reason: 'Vous avez besoin de grand air et de beauté naturelle. Hakone et ses onsen face au Fuji vous ressourceront profondément.',                          accentColor: '#fb923c', icon: '🗻' },
+  tokyo:    { slug: 'tokyo',    kanji: '東京', name: 'Tokyo',    subtitle: 'Lumières Infinies',     reason: "Vous vibrez avec l'énergie des villes vivantes. Tokyo est la seule métropole qui ne vous laissera jamais indifférent.",                         accentColor: '#38bdf8', icon: '🏙️' },
+  hakone:   { slug: 'hakone',   kanji: '箱根', name: 'Hakone',   subtitle: 'Le Souffle du Fuji',    reason: 'Vous avez besoin de grand air et de beauté naturelle. Hakone et ses onsen face au Fuji vous ressourceront profondément.',                         accentColor: '#fb923c', icon: '🗻' },
   osaka:    { slug: 'osaka',    kanji: '大阪', name: 'Osaka',    subtitle: "L'Art de Vivre",        reason: "Vous aimez rire, manger et vivre intensément. Osaka est le Japon sans filtre — chaleureux, festif et irrésistible.",                              accentColor: '#f472b6', icon: '🏯' },
-  nara:     { slug: 'nara',     kanji: '奈良', name: 'Nara',     subtitle: 'Les Gardiens Sacrés',   reason: "Vous recherchez la douceur et le sacré. Nara et ses cerfs divins vous offriront un moment hors du temps.",                                         accentColor: '#34d399', icon: '🦌' },
-  hiroshima:{ slug: 'hiroshima',kanji: '広島', name: 'Hiroshima',subtitle: 'Mémoire & Renaissance', reason: "Vous êtes touché par les histoires humaines et la résilience. Hiroshima vous marquera à jamais.",                                                accentColor: '#94a3b8', icon: '🕊️' },
+  nara:     { slug: 'nara',     kanji: '奈良', name: 'Nara',     subtitle: 'Les Gardiens Sacrés',   reason: "Vous recherchez la douceur et le sacré. Nara et ses cerfs divins vous offriront un moment hors du temps.",                                        accentColor: '#34d399', icon: '🦌' },
+  hiroshima:{ slug: 'hiroshima',kanji: '広島', name: 'Hiroshima',subtitle: 'Mémoire & Renaissance', reason: "Vous êtes touché par les histoires humaines et la résilience. Hiroshima vous marquera à jamais.",                                                 accentColor: '#94a3b8', icon: '🕊️' },
   okinawa:  { slug: 'okinawa',  kanji: '沖縄', name: 'Okinawa',  subtitle: "L'Âme des Tropiques",   reason: "Vous rêvez de mer turquoise et de cultures insulaires uniques. Okinawa et son Royaume Ryukyu vous révéleront un Japon que vous n'imaginiez pas.",  accentColor: '#22d3ee', icon: '🏖️' },
   hokkaido: { slug: 'hokkaido', kanji: '北海道',name: 'Hokkaidō', subtitle: 'Le Grand Nord Sauvage', reason: "Vous aimez la nature démesurée et les grands espaces vierges. Hokkaidō — ses champs de lavande, sa poudreuse légendaire et ses volcans — est fait pour vous.", accentColor: '#818cf8', icon: '🏔️' },
 }
 
+// Cette partie concerne le "cerveau" du quiz. 
+// J'ai fait ça en dehors du composant pour garder la logique pure et testable. Elle prend un tableau de réponses (ex: [0, 2, 1]) et retourne la destination qui a le plus de points.
 function computeResult(answers: number[]): Result {
   const scores: Record<string, number> = {}
+  
+  // On boucle sur chaque réponse de l'utilisateur.
   answers.forEach((choiceIndex, questionIndex) => {
+    // On retrouve le choix exact qu'il a cliqué pour cette question.
     const choice = QUESTIONS[questionIndex].choices[choiceIndex]
+    
+    // On ajoute les points de ce choix au total de chaque destination concernée.
     Object.entries(choice.scores).forEach(([slug, pts]) => {
-      scores[slug] = (scores[slug] ?? 0) + pts
+      scores[slug] = (scores[slug] ?? 0) + pts // Si la destination n'a pas encore de points (undefined), on commence à 0 (grâce à ?? 0).
     })
   })
+  
+  // C'est un peu technique : on transforme l'objet des scores en tableau, on le trie par ordre décroissant de points (b[1] - a[1]), et on prend le slug du gagnant ([0][0]).
   const winner = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0]
   return RESULTS[winner]
 }
 
+// Composant visuel simple pour afficher la barre de progression en haut du quiz.
 function ProgressDots({ total, current }: { total: number; current: number }) {
   return (
     <div className="flex gap-2 justify-center mb-6">
@@ -102,12 +115,15 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 
 export default function DestinationQuiz() {
   const router = useRouter()
-  const [open,          setOpen]          = useState(false)
-  const [step,          setStep]          = useState(0)
-  const [answers,       setAnswers]       = useState<number[]>([])
-  const [result,        setResult]        = useState<Result | null>(null)
-  const [hoveredChoice, setHoveredChoice] = useState<number | null>(null)
+  
+  // Cette partie concerne les différents états du quiz.
+  const [open,          setOpen]          = useState(false) // Modale ouverte ou fermée ?
+  const [step,          setStep]          = useState(0) // Quelle question affiche-t-on ? (0, 1, 2...)
+  const [answers,       setAnswers]       = useState<number[]>([]) // Historique des choix de l'utilisateur.
+  const [result,        setResult]        = useState<Result | null>(null) // Résultat final.
+  const [hoveredChoice, setHoveredChoice] = useState<number | null>(null) // Effet visuel au survol d'un choix.
 
+  // Ouvre le quiz et remet tout à zéro.
   const handleOpen = () => {
     setStep(0)
     setAnswers([])
@@ -117,16 +133,20 @@ export default function DestinationQuiz() {
 
   const handleClose = () => setOpen(false)
 
+  // Permet de revenir à la question précédente.
   const handleBack = () => {
     if (step > 0) {
       setStep(step - 1)
-      setAnswers(answers.slice(0, -1))
+      setAnswers(answers.slice(0, -1)) // On enlève la dernière réponse de l'historique.
     }
   }
 
+  // Cette partie là sert à enregistrer le choix de l'utilisateur quand il clique sur une option.
   const handleChoice = (choiceIndex: number) => {
     const newAnswers = [...answers, choiceIndex]
     setAnswers(newAnswers)
+    
+    // Si on a répondu à toutes les questions, on calcule le résultat. Sinon, on passe à la question suivante.
     if (newAnswers.length === QUESTIONS.length) {
       setResult(computeResult(newAnswers))
       setStep(QUESTIONS.length)
@@ -142,10 +162,12 @@ export default function DestinationQuiz() {
   }
 
   const currentQuestion = QUESTIONS[step]
+  // Permet de savoir facilement si on doit afficher une question ou l'écran de résultat final.
   const isQuestion = step < QUESTIONS.length
 
   return (
     <>
+      {/* Le bouton d'appel à l'action initial (sur la page d'accueil) */}
       <motion.button
         onClick={handleOpen}
         whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(251,146,60,0.35)' }}
@@ -157,6 +179,7 @@ export default function DestinationQuiz() {
         Trouver ma destination
       </motion.button>
 
+      {/* Cette partie concerne la fenêtre modale (le pop-up) qui s'ouvre par-dessus la page. */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -166,6 +189,7 @@ export default function DestinationQuiz() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-100 flex items-center justify-center p-6 pt-24"
             style={{ background: 'rgba(6,4,16,0.92)', backdropFilter: 'blur(16px)' }}
+            // J'ai fait ça pour permettre à l'utilisateur de fermer le quiz en cliquant n'importe où en dehors de la boîte centrale.
             onClick={(e) => e.target === e.currentTarget && handleClose()}
           >
             <motion.div
@@ -188,7 +212,7 @@ export default function DestinationQuiz() {
                 aria-hidden
               />
 
-              {/* Barre top */}
+              {/* Barre top (Bouton Retour et Fermer) */}
               <div className="relative z-10 flex items-center justify-between px-6 pt-6 pb-2">
                 {isQuestion && step > 0 ? (
                   <motion.button
@@ -202,7 +226,7 @@ export default function DestinationQuiz() {
                     ← Retour
                   </motion.button>
                 ) : (
-                  <span className="w-16" />
+                  <span className="w-16" /> // Élément invisible pour garder le bouton "X" aligné à droite avec Flexbox (space-between).
                 )}
 
                 <button
@@ -217,13 +241,14 @@ export default function DestinationQuiz() {
                 </button>
               </div>
 
-              {/* Contenu */}
+              {/* Contenu dynamique */}
               <div className="relative z-10 px-8 pb-10 pt-2">
                 <AnimatePresence mode="wait">
 
-                  {/* Questions */}
+                  {/* ── Écran des Questions ── */}
                   {isQuestion && (
                     <motion.div
+                      // L'utilisation de key={`q-${step}`} est super importante ici. Elle force React/FramerMotion à comprendre que c'est une nouvelle question et qu'il faut rejouer l'animation de glissement.
                       key={`q-${step}`}
                       initial={{ opacity: 0, x: 24 }}
                       animate={{ opacity: 1, x: 0  }}
@@ -269,7 +294,7 @@ export default function DestinationQuiz() {
                     </motion.div>
                   )}
 
-                  {/* Résultat */}
+                  {/* ── Écran du Résultat ── */}
                   {!isQuestion && result && (
                     <motion.div
                       key="result"
@@ -308,6 +333,7 @@ export default function DestinationQuiz() {
                       </p>
 
                       <div className="flex gap-3 justify-center flex-wrap">
+                        {/* Ce bouton redirige l'utilisateur vers la page détaillée de la destination qu'il vient de "gagner". */}
                         <motion.button
                           onClick={() => { handleClose(); router.push(`/destination/${result.slug}`) }}
                           whileHover={{ scale: 1.05, boxShadow: `0 0 30px ${result.accentColor}50` }}

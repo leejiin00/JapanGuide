@@ -2,8 +2,11 @@
 
 // app/destination/DestinationsPageClient.tsx
 
+// Cette partie là sert à importer les hooks de React.
+// J'ai fait ça pour utiliser `useState` (gérer le texte de recherche et le bouton actif) et `useMemo` (optimiser les performances).
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
+// Note : Le composant DestinationCard n'est pas dans ce fichier, on suppose qu'il affiche juste une belle carte avec les infos.
 import DestinationCard from '@/components/DestinationCard'
 import type { DestinationWithStats } from '@/types/database'
 
@@ -14,15 +17,24 @@ interface Props {
 const REGIONS = ['Toutes', 'Kansai', 'Kantō', 'Chūgoku', 'Ryūkyū', 'Hokkaidō']
 
 export default function DestinationsPageClient({ destinations }: Props) {
+  // Cette partie concerne l'état des filtres sélectionnés par l'utilisateur.
   const [search,       setSearch]       = useState('')
   const [activeRegion, setActiveRegion] = useState('Toutes')
 
+  // Cette partie concerne la logique de filtrage combinée.
+  // J'ai fait ça (useMemo) pour "mémoriser" le résultat du filtrage. React ne refera ce calcul parfois lourd QUE si les variables `destinations`, `activeRegion` ou `search` sont modifiées, ce qui économise la batterie et le processeur de l'utilisateur.
   const filtered = useMemo(() => {
     return destinations.filter((d) => {
+      // 1. On vérifie si la destination correspond à la région cliquée.
       const matchRegion = activeRegion === 'Toutes' || d.region === activeRegion
+      
+      // 2. On vérifie si la destination correspond au texte tapé dans la barre de recherche.
+      // On compare le nom de la ville OU les tags (en mettant tout en minuscules pour ne pas être embêté par les majuscules).
       const matchSearch = search.trim() === '' ||
         d.name.toLowerCase().includes(search.toLowerCase()) ||
         d.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
+        
+      // 3. La destination n'est gardée que si elle valide LES DEUX conditions.
       return matchRegion && matchSearch
     })
   }, [destinations, activeRegion, search])
@@ -57,6 +69,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
       </div>
 
       {/* ── Filters ── */}
+      {/* Cette partie concerne la barre de filtres. "sticky top-18" permet de garder la barre accrochée en haut de l'écran quand on fait défiler la page vers le bas. */}
       <div
         className="sticky top-18 z-30 mb-12"
         style={{
@@ -68,6 +81,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
 
           {/* Search */}
+          {/* Cette partie là sert à afficher le champ de texte libre. */}
           <div className="relative shrink-0 w-full sm:w-64">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 text-sm pointer-events-none">
               🔍
@@ -75,6 +89,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
             <input
               type="text"
               value={search}
+              // À chaque fois que l'utilisateur tape une lettre, on met à jour le state "search", ce qui déclenche automatiquement le recalcul du "useMemo" plus haut.
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher une ville, un tag..."
               className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm font-body text-white placeholder-white/20 outline-none transition-all"
@@ -85,6 +100,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
           </div>
 
           {/* Region filters */}
+          {/* Cette partie là sert à afficher les boutons de régions pour un filtrage rapide par clic. */}
           <div className="flex gap-2 flex-wrap">
             {REGIONS.map((region) => (
               <motion.button
@@ -112,6 +128,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
 
           {/* Count */}
           <p className="text-[10px] text-white/25 font-body ml-auto hidden sm:block">
+            {/* On affiche le nombre d'éléments restants après le filtrage. */}
             {filtered.length} destination{filtered.length > 1 ? 's' : ''}
           </p>
         </div>
@@ -119,6 +136,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
 
       {/* ── Grid ── */}
       <div className="max-w-7xl mx-auto px-6">
+        {/* Cette partie concerne l'affichage conditionnel : on gère élégamment le cas où l'utilisateur a tapé une recherche qui ne donne aucun résultat. */}
         {filtered.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -138,6 +156,7 @@ export default function DestinationsPageClient({ destinations }: Props) {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {/* On affiche les cartes uniquement pour les destinations qui ont survécu au filtre ! */}
             {filtered.map((dest, i) => (
               <DestinationCard key={dest.id} destination={dest} index={i} />
             ))}

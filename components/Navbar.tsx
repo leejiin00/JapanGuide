@@ -2,11 +2,13 @@
 
 // components/Navbar.tsx
 
+// Cette partie là sert à importer les outils nécessaires au routage et aux animations interactives.
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 
+// C'est une excellente pratique de sortir la configuration des liens en dehors du composant pour ne pas polluer le JSX et faciliter les modifications futures.
 const navLinks = [
   { href: '/',            label: 'Accueil'      },
   { href: '/destination', label: 'Destinations' },
@@ -16,15 +18,24 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname()
-  const [scrolled,  setScrolled]  = useState(false)
-  const [menuOpen,  setMenuOpen]  = useState(false)
+  
+  // Ces deux états locaux gèrent le comportement de la barre.
+  const [scrolled,  setScrolled]  = useState(false) // Permet de savoir si on a commencé à descendre sur la page.
+  const [menuOpen,  setMenuOpen]  = useState(false) // Gère l'ouverture du menu mobile.
 
+  // Cette partie concerne la détection du défilement.
   useEffect(() => {
+    // Si l'utilisateur a défilé de plus de 40 pixels, on passe "scrolled" à true.
     const handleScroll = () => setScrolled(window.scrollY > 40)
+    
+    // J'ai fait ça pour écouter le scroll. L'option "{ passive: true }" est une super bonne pratique de performance : elle dit au navigateur qu'on ne va pas bloquer le défilement naturel (avec un e.preventDefault()), ce qui rend le scroll beaucoup plus fluide sur mobile.
     window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    // Le "return" dans un useEffect sert de fonction de nettoyage (cleanup). Si le composant est détruit, on enlève l'écouteur d'événement pour éviter les fuites de mémoire.
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // J'ai fait ça pour forcer la fermeture du menu mobile (plein écran) dès que l'utilisateur clique sur un lien et change de page (pathname change).
   useEffect(() => { setMenuOpen(false) }, [pathname])
 
   return (
@@ -34,6 +45,7 @@ export default function Navbar() {
         animate={{ y: 0,   opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between"
+        // Cette partie là sert à modifier l'apparence de la barre (fond flouté et bordure) dynamiquement selon qu'on a défilé (scrolled) ou non.
         style={{
           background:          scrolled ? 'rgba(6,4,16,0.88)' : 'rgba(6,4,16,0.4)',
           backdropFilter:      'blur(24px)',
@@ -68,9 +80,11 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map(({ href, label }) => {
+            // Cette logique sert à savoir si le lien actuel correspond à la page affichée. Pour l'accueil ('/'), il faut une correspondance stricte. Pour les autres, un "startsWith" suffit (pour que le menu "Destinations" reste allumé quand on est sur "/destination/tokyo").
             const isActive = href === '/'
               ? pathname === '/'
               : pathname.startsWith(href)
+              
             return (
               <Link key={href} href={href}>
                 <motion.span
@@ -79,6 +93,7 @@ export default function Navbar() {
                   whileHover={{ color: '#fb923c' }}
                   transition={{ duration: 0.2 }}
                 >
+                  {/* On retrouve la fameuse astuce "layoutId" de Framer Motion vue précédemment ! Cela fait glisser la surbrillance d'un onglet à l'autre. */}
                   {isActive && (
                     <motion.span
                       layoutId="nav-pill"
@@ -114,19 +129,23 @@ export default function Navbar() {
           </motion.a>
 
           {/* Mobile burger */}
+          {/* Cette partie concerne la création d'un bouton burger personnalisé composé de 3 lignes de HTML/CSS animées, sans utiliser d'image externe. */}
           <button
             className="md:hidden w-8 h-8 flex flex-col justify-center items-center gap-1.5"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Menu"
           >
+            {/* Ligne du haut : elle s'incline à 45 degrés pour faire la barre de la croix. */}
             <motion.span
               animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 8 : 0 }}
               className="block w-5 h-px bg-white origin-center"
             />
+            {/* Ligne du milieu : elle disparaît complètement. */}
             <motion.span
               animate={{ opacity: menuOpen ? 0 : 1, scaleX: menuOpen ? 0 : 1 }}
               className="block w-5 h-px bg-white"
             />
+            {/* Ligne du bas : elle s'incline à -45 degrés pour finir la croix. */}
             <motion.span
               animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -8 : 0 }}
               className="block w-5 h-px bg-white origin-center"
@@ -136,6 +155,7 @@ export default function Navbar() {
       </motion.header>
 
       {/* Mobile menu */}
+      {/* J'ai fait ça (AnimatePresence) pour permettre au menu mobile de jouer son animation de fondu de sortie ("exit") quand il se ferme. */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -152,6 +172,7 @@ export default function Navbar() {
                   key={href}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  // L'utilisation de "i * 0.07" crée un joli effet d'apparition en cascade (stagger) pour les liens du menu.
                   transition={{ delay: i * 0.07 + 0.1 }}
                 >
                   <Link
@@ -162,6 +183,7 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
+              
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

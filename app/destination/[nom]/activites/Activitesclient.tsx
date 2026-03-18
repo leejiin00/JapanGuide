@@ -1,5 +1,6 @@
 'use client';
 
+// Cette partie là sert à importer les outils nécessaires au fonctionnement du composant côté client.
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DestinationFull } from '@/types/database';
@@ -7,12 +8,15 @@ import type { DestinationFull } from '@/types/database';
 interface Props { dest: DestinationFull }
 
 export default function ActivitesClient({ dest }: Props) {
+  // Cette partie concerne la gestion de l'activité actuellement dépliée par l'utilisateur.
+  // J'ai fait ça pour m'assurer qu'une seule activité puisse être ouverte à la fois (en stockant son ID). Si c'est null, ça veut dire que toutes les cartes sont fermées.
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
     <div className="space-y-14">
 
       {/* Header */}
+      {/* Cette partie concerne l'en-tête de la section. L'animation "initial/animate" la fait apparaître doucement au chargement. */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
         <p className="text-[10px] tracking-[0.35em] uppercase font-body mb-2" style={{ color: dest.accent_color }}>体験 — Expériences</p>
         <h2 className="font-display font-thin text-white mb-3" style={{ fontSize: 'clamp(2rem,4vw,3rem)' }}>Que Faire à {dest.name}</h2>
@@ -23,16 +27,21 @@ export default function ActivitesClient({ dest }: Props) {
 
       {/* Activity cards */}
       <div className="grid sm:grid-cols-2 gap-5">
+        {/* Cette partie là sert à parcourir toutes les activités liées à la destination pour créer une carte par activité. */}
         {dest.activities.map((act, i) => {
+          // J'ai fait ça pour vérifier simplement si la carte que la boucle est en train de dessiner correspond à celle sur laquelle l'utilisateur a cliqué.
           const isOpen = selected === act.id;
+          
           return (
             <motion.div
               key={act.id}
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
+              // L'utilisation du "delay: i * 0.1" permet l'apparition des cartes en cascade, une par une.
               transition={{ duration: 0.6, delay: i * 0.1 }}
             >
               <motion.div
+                // Cette partie concerne l'interaction : au clic, si la carte est déjà ouverte, on la ferme (null), sinon on l'ouvre (act.id).
                 onClick={() => setSelected(isOpen ? null : act.id)}
                 whileHover={{ y: isOpen ? 0 : -5, boxShadow: `0 24px 60px ${act.accent_color}25` }}
                 className="rounded-2xl overflow-hidden cursor-pointer"
@@ -46,6 +55,7 @@ export default function ActivitesClient({ dest }: Props) {
                 {/* Card header */}
                 <div className="p-6 pb-4" style={{ background: isOpen ? `linear-gradient(135deg, ${act.accent_color}12, transparent)` : 'transparent' }}>
                   <div className="flex items-start justify-between mb-4">
+                    {/* Cette partie là sert à animer l'icône de l'activité (léger grossissement et rotation) quand la carte s'ouvre. */}
                     <motion.span className="text-4xl" animate={{ scale: isOpen ? 1.15 : 1, rotate: isOpen ? 5 : 0 }} transition={{ type: 'spring', stiffness: 300 }}>
                       {act.icon}
                     </motion.span>
@@ -65,6 +75,7 @@ export default function ActivitesClient({ dest }: Props) {
                 </div>
 
                 {/* Expandable */}
+                {/* Cette partie concerne le bloc caché qui se déplie. AnimatePresence gère la transition de sortie (exit) quand le composant est retiré du DOM. */}
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
@@ -86,6 +97,7 @@ export default function ActivitesClient({ dest }: Props) {
                 </AnimatePresence>
 
                 {/* Expand hint */}
+                {/* J'ai fait ça pour n'afficher le petit texte "Détails ->" que lorsque la carte est fermée. */}
                 {!isOpen && (
                   <div className="px-6 pb-4 flex justify-end">
                     <span className="text-xs font-body tracking-wider" style={{ color: act.accent_color }}>Détails →</span>
@@ -98,6 +110,7 @@ export default function ActivitesClient({ dest }: Props) {
       </div>
 
       {/* Tips */}
+      {/* Cette partie là sert à afficher les astuces, mais uniquement quand l'utilisateur scrolle jusqu'à cette zone (whileInView). */}
       <motion.div
         initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
         className="rounded-2xl p-8"

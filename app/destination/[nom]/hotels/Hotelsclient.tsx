@@ -1,4 +1,5 @@
 'use client';
+// Cette partie là sert à indiquer à Next.js qu'il s'agit d'un Client Component, ce qui nous autorise à utiliser des hooks d'état (useState) et d'interactivité (onClick).
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -6,6 +7,8 @@ import type { DestinationFull } from '@/types/database';
 
 interface Props { dest: DestinationFull }
 
+// Cette partie concerne le composant d'affichage des étoiles. 
+// J'ai fait ça pour extraire cette petite logique visuelle en dehors du composant principal afin de garder "HotelsClient" plus lisible.
 function Stars({ n, color }: { n: number; color: string }) {
   return (
     <div className="flex gap-0.5">
@@ -17,9 +20,13 @@ function Stars({ n, color }: { n: number; color: string }) {
 }
 
 export default function HotelsClient({ dest }: Props) {
+  // Cette partie concerne la gestion de l'onglet actif. 
+  // J'ai fait ça pour mémoriser l'index (0, 1, 2...) de l'hôtel que l'utilisateur est en train de regarder. Par défaut, on affiche le premier (index 0).
   const [active, setActive] = useState(0);
   const hotel = dest.hotels[active];
 
+  // Cette partie là sert à faire ce qu'on appelle un "Early Return" (retour anticipé) ou de la programmation défensive. 
+  // J'ai fait ça pour éviter que l'application ne plante (crash) si jamais la base de données renvoie une destination qui ne possède aucun hôtel.
   if (!hotel) return (
     <p className="text-white/40 font-body text-sm pt-10">Aucun hôtel disponible pour cette destination.</p>
   );
@@ -38,9 +45,11 @@ export default function HotelsClient({ dest }: Props) {
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
+        {/* Cette partie là sert à générer les boutons d'onglets pour chaque hôtel disponible. */}
         {dest.hotels.map((h, i) => (
           <motion.button
             key={h.id}
+            // J'ai fait ça pour mettre à jour notre état local avec l'index de l'hôtel cliqué. Cela va forcer React à re-rendre le composant avec les nouvelles données.
             onClick={() => setActive(i)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -58,6 +67,8 @@ export default function HotelsClient({ dest }: Props) {
 
       {/* Active hotel */}
       <motion.div
+        // Cette partie concerne une astuce géniale de React et Framer Motion : l'utilisation de la "key".
+        // J'ai fait ça pour forcer le composant <motion.div> à se détruire et à se recréer entièrement à chaque fois que la variable "active" change. Cela permet de rejouer l'animation d'apparition "initial" à chaque changement d'onglet !
         key={active}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

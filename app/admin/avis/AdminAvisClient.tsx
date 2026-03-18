@@ -1,10 +1,12 @@
 'use client';
+// Cette partie là sert à indiquer à Next.js qu'on est côté client (navigateur). C'est indispensable car on utilise des hooks d'état (useState) et d'interactivité.
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+// Cette partie concerne le typage TypeScript de notre objet "Review" tel qu'il revient de la base de données.
 interface Review {
   id:           string
   author:       string
@@ -25,10 +27,14 @@ type Filter = 'all' | 'pending' | 'approved'
 
 export default function AdminAvisClient({ reviews: initial }: Props) {
   const router = useRouter()
+  // Cette partie concerne la gestion de l'état local du composant. On initialise les avis avec ce qui vient du serveur (initial).
   const [reviews, setReviews] = useState<Review[]>(initial)
   const [filter, setFilter]   = useState<Filter>('pending')
+  
+  // J'ai fait ça pour garder en mémoire l'ID de l'avis en cours de traitement, afin de désactiver les boutons et éviter qu'un utilisateur clique deux fois.
   const [processing, setProc] = useState<string | null>(null)
 
+  // Cette partie là sert à filtrer le tableau d'avis affiché en fonction de l'onglet sélectionné (En attente, Approuvés, Tous).
   const filtered = reviews.filter((r) => {
     if (filter === 'pending')  return !r.approved
     if (filter === 'approved') return r.approved
@@ -41,11 +47,14 @@ export default function AdminAvisClient({ reviews: initial }: Props) {
     approved: reviews.filter((r) => r.approved).length,
   }
 
+  // Cette partie là sert à valider un avis côté base de données et à mettre à jour l'interface instantanément.
   const approve = async (id: string) => {
     setProc(id)
     const supabase = createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase.from('reviews') as any).update({ approved: true }).eq('id', id)
+    
+    // J'ai fait ça pour modifier l'état local immédiatement (optimistic UI), sans attendre un rechargement de page complet, pour que l'interface soit super réactive.
     setReviews((prev) => prev.map((r) => r.id === id ? { ...r, approved: true } : r))
     setProc(null)
     router.refresh()
@@ -88,6 +97,7 @@ export default function AdminAvisClient({ reviews: initial }: Props) {
         ))}
       </div>
 
+      {/* Cette partie concerne les animations de sortie. AnimatePresence est nécessaire pour que framer-motion puisse animer un élément qui est supprimé du DOM (quand on approuve ou supprime un avis). */}
       <AnimatePresence mode="popLayout">
         {filtered.length === 0 ? (
           <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}

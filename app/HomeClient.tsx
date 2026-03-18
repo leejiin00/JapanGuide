@@ -2,6 +2,7 @@
 
 // app/HomeClient.tsx
 
+// Cette partie là sert à importer les outils d'animation avancés de framer-motion.
 import { useRef } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import DestinationCard from '@/components/DestinationCard'
@@ -12,6 +13,8 @@ interface Props {
   destinations: DestinationWithStats[]
 }
 
+// Cette partie concerne l'effet visuel des caractères japonais (Kanjis) flottants en arrière-plan.
+// J'ai fait ça pour créer un composant autonome qui génère les caractères avec des tailles, des positions et des délais d'animation aléatoires (basés sur leur index `i`).
 function KanjiLayer() {
   const chars = ['日', '本', '旅', '夢', '美', '心', '道', '光', '影', '神', '風', '海', '火', '山']
   return (
@@ -25,6 +28,7 @@ function KanjiLayer() {
             left:     `${(i / chars.length) * 95}%`,
             top:      `${(i * 47) % 90}%`,
           }}
+          // L'animation "y: [0, -18, 0]" combinée au "repeat: Infinity" fait flotter le Kanji de haut en bas indéfiniment.
           animate={{ opacity: [0.015, 0.05, 0.015], y: [0, -18, 0] }}
           transition={{ duration: 7 + i * 0.6, repeat: Infinity, delay: i * 0.4, ease: 'easeInOut' }}
         >
@@ -35,6 +39,7 @@ function KanjiLayer() {
   )
 }
 
+// Cette partie là sert à dessiner le Torii (portail japonais) en bas de l'écran d'accueil avec du code SVG pur.
 function ToriiSilhouette() {
   return (
     <svg
@@ -43,6 +48,7 @@ function ToriiSilhouette() {
       className="w-full absolute bottom-0 opacity-[0.12] pointer-events-none"
       aria-hidden
     >
+      {/* ... (formes géométriques SVG) ... */}
       <rect x="80"  y="55" width="740" height="22" rx="5" fill="#fb923c" />
       <rect x="115" y="32" width="670" height="16" rx="4" fill="#fb923c" />
       <rect x="160" y="77" width="22"  height="303" rx="5" fill="#fb923c" />
@@ -55,12 +61,21 @@ function ToriiSilhouette() {
 }
 
 export default function HomeClient({ destinations }: Props) {
+  // Cette partie concerne la mise en place de l'effet Parallaxe au défilement (scroll).
+  // 1. On crée une référence (heroRef) qu'on va attacher à la section principale.
   const heroRef = useRef<HTMLElement>(null)
+  
+  // 2. On dit à Framer Motion d'écouter le défilement uniquement quand cette section (heroRef) est à l'écran. 
+  // "scrollYProgress" va aller de 0 (tout en haut) à 1 (quand la section quitte l'écran).
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
 
+  // 3. On transforme la progression du scroll (0 à 1) en valeurs CSS.
+  // Par exemple : quand on scrolle de 0 à 1, "opacityHero" passera de 1 (totalement visible) à 0 (invisible).
   const yParallax   = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
   const opacityHero = useTransform(scrollYProgress, [0, 0.65], [1, 0])
   const scaleHero   = useTransform(scrollYProgress, [0, 1], [1, 1.08])
+  
+  // 4. J'ai ajouté un effet ressort (spring) sur le mouvement vertical pour que le parallaxe soit plus doux et fluide.
   const springY     = useSpring(yParallax, { stiffness: 80, damping: 25 })
 
   return (
@@ -69,6 +84,7 @@ export default function HomeClient({ destinations }: Props) {
       <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
 
         {/* Background */}
+        {/* On applique le "scaleHero" ici : plus on scrolle vers le bas, plus le fond va légèrement zoomer. */}
         <motion.div className="absolute inset-0" style={{ scale: scaleHero }}>
           <div className="absolute inset-0" style={{
             background: `
@@ -89,15 +105,18 @@ export default function HomeClient({ destinations }: Props) {
           style={{ background: 'rgba(56,189,248,0.06)', width: 500, height: 500, top: '10%', right: '-10%' }} />
 
         {/* Torii */}
+        {/* On applique le "springY" : le portail va descendre (25%) à une vitesse différente du reste de la page pendant le scroll. */}
         <motion.div style={{ y: springY }} className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <ToriiSilhouette />
         </motion.div>
 
         {/* Hero content */}
+        {/* On applique le "opacityHero" : le texte central va s'effacer (fade out) au fur et à mesure qu'on descend. */}
         <motion.div
           style={{ opacity: opacityHero }}
           className="relative z-10 text-center px-6 max-w-5xl mx-auto"
         >
+          {/* L'animation d'apparition du texte au tout premier chargement de la page. */}
           <motion.p
             initial={{ opacity: 0, letterSpacing: '0.8em' }}
             animate={{ opacity: 1, letterSpacing: '0.4em' }}
@@ -110,6 +129,7 @@ export default function HomeClient({ destinations }: Props) {
 
           <div className="overflow-hidden mb-3">
             <motion.h1
+              // L'animation "y: 130 à 0" à l'intérieur d'une div en "overflow-hidden" crée un magnifique effet d'apparition textuelle type "rideau qui se lève".
               initial={{ y: 130 }} animate={{ y: 0 }}
               transition={{ duration: 1.1, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
               className="font-display font-thin leading-none clip-text"
@@ -148,10 +168,8 @@ export default function HomeClient({ destinations }: Props) {
             transition={{ duration: 0.8, delay: 1.25 }}
             className="flex items-center justify-center gap-5 flex-wrap"
           >
-            {/* Quiz button — remplace "Explorer" */}
             <DestinationQuiz />
 
-            {/* Secondary CTA */}
             <motion.a
               href="/destination"
               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(255,255,255,0.08)' }}
@@ -220,6 +238,7 @@ export default function HomeClient({ destinations }: Props) {
 
       {/* ─── DESTINATIONS ─── */}
       <section id="destinations" className="relative py-32 px-6 overflow-hidden">
+        {/* ... (Orbes lumineuses) ... */}
         <div className="absolute rounded-full pointer-events-none blur-3xl" aria-hidden
           style={{ background: 'rgba(139,92,246,0.1)', width: 600, height: 600, top: '5%', left: '-12%' }} />
         <div className="absolute rounded-full pointer-events-none blur-3xl" aria-hidden
@@ -250,11 +269,14 @@ export default function HomeClient({ destinations }: Props) {
             </div>
           ) : (
             <>
+              {/* Cette partie là sert à n'afficher que les 6 premières destinations de la liste sur la page d'accueil. */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {destinations.slice(0, 6).map((dest, i) => (
                   <DestinationCard key={dest.id} destination={dest} index={i} />
                 ))}
               </div>
+              
+              {/* Si on a plus de 6 destinations, on affiche le bouton pour "Voir plus". */}
               {destinations.length > 6 && (
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
@@ -290,6 +312,7 @@ export default function HomeClient({ destinations }: Props) {
         <div className="absolute inset-0" aria-hidden style={{
           background: 'radial-gradient(ellipse 70% 70% at 50% 50%, rgba(251,146,60,0.07) 0%, transparent 65%)',
         }} />
+        {/* On réutilise notre composant KanjiLayer ici pour la cohérence visuelle ! */}
         <KanjiLayer />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <motion.div
