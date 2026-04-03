@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { approveReviewAction, deleteReviewAction } from '@/app/actions/admin';
 
 // Cette partie concerne la définition stricte des propriétés (props) que ce composant va recevoir depuis le serveur. 
 // J'ai fait ça pour garantir que TypeScript vérifie bien qu'on passe les bons chiffres pour les statistiques.
@@ -58,17 +58,15 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
   const [reviews, setReviews]   = useState<PendingReview[]>(initialReviews)
   const [processing, setProc]   = useState<string | null>(null)
 
-  // Cette partie concerne l'approbation rapide d'un avis depuis le dashboard. C'est la même logique que sur la page complète des avis.
-  // Le guard "processing" en début de fonction évite la race condition si l'admin double-clique.
+  // Approbation via Server Action — utilise createAdminClient() côté serveur uniquement.
+  // Le guard "processing" évite la race condition si l'admin double-clique.
   const handleApprove = async (reviewId: string) => {
     if (processing) return
     setProc(reviewId)
     try {
-      const supabase = createClient()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.from('reviews') as any).update({ approved: true }).eq('id', reviewId)
-      if (error) {
-        console.error('[handleApprove] Erreur Supabase:', error.message)
+      const result = await approveReviewAction(reviewId)
+      if (!result.success) {
+        console.error('[handleApprove]', result.error)
         return
       }
       setReviews((prev) => prev.filter((r) => r.id !== reviewId))
@@ -80,16 +78,15 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
     }
   }
 
-  // Cette partie là sert à supprimer un avis depuis le dashboard.
-  // Le guard "processing" en début de fonction évite la race condition si l'admin double-clique.
+  // Suppression via Server Action — utilise createAdminClient() côté serveur uniquement.
+  // Le guard "processing" évite la race condition si l'admin double-clique.
   const handleDelete = async (reviewId: string) => {
     if (processing) return
     setProc(reviewId)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('reviews').delete().eq('id', reviewId)
-      if (error) {
-        console.error('[handleDelete] Erreur Supabase:', error.message)
+      const result = await deleteReviewAction(reviewId)
+      if (!result.success) {
+        console.error('[handleDelete]', result.error)
         return
       }
       setReviews((prev) => prev.filter((r) => r.id !== reviewId))

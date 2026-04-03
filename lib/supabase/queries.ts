@@ -135,7 +135,7 @@ export async function submitReview(review: ReviewInsert) {
 
   const { data, error } = await supabase
     .from('reviews')
-    .insert(payload as any)
+    .insert(payload)
     .select()
     .single()
 
@@ -268,7 +268,7 @@ export async function approveReview(reviewId: string) {
   const supabase = createAdminClient()
   const { error } = await supabase
     .from('reviews')
-    .update({ approved: true } as any)
+    .update({ approved: true })
     .eq('id', reviewId)
   return { success: !error, error: error?.message }
 }
@@ -288,7 +288,7 @@ export async function updateDestination(id: string, updates: Record<string, unkn
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('destinations')
-    .update(updates as any)
+    .update(updates)
     .eq('id', id)
     .select()
     .single()

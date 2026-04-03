@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { approveReviewAction, deleteReviewAction } from '@/app/actions/admin';
 
 // Cette partie concerne le typage TypeScript de notre objet "Review" tel qu'il revient de la base de données.
 interface Review {
@@ -47,27 +47,44 @@ export default function AdminAvisClient({ reviews: initial }: Props) {
     approved: reviews.filter((r) => r.approved).length,
   }
 
-  // Cette partie là sert à valider un avis côté base de données et à mettre à jour l'interface instantanément.
+  // Approbation via Server Action — createAdminClient() côté serveur uniquement.
+  // Mise à jour optimiste de l'UI pour une réactivité immédiate.
   const approve = async (id: string) => {
+    if (processing) return
     setProc(id)
-    const supabase = createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('reviews') as any).update({ approved: true }).eq('id', id)
-    
-    // J'ai fait ça pour modifier l'état local immédiatement (optimistic UI), sans attendre un rechargement de page complet, pour que l'interface soit super réactive.
-    setReviews((prev) => prev.map((r) => r.id === id ? { ...r, approved: true } : r))
-    setProc(null)
-    router.refresh()
+    try {
+      const result = await approveReviewAction(id)
+      if (!result.success) {
+        console.error('[approve]', result.error)
+        return
+      }
+      setReviews((prev) => prev.map((r) => r.id === id ? { ...r, approved: true } : r))
+      router.refresh()
+    } catch (err) {
+      console.error('[approve] Erreur inattendue:', err)
+    } finally {
+      setProc(null)
+    }
   }
 
+  // Suppression via Server Action — createAdminClient() côté serveur uniquement.
   const remove = async (id: string) => {
     if (!confirm('Supprimer cet avis définitivement ?')) return
+    if (processing) return
     setProc(id)
-    const supabase = createClient()
-    await supabase.from('reviews').delete().eq('id', id)
-    setReviews((prev) => prev.filter((r) => r.id !== id))
-    setProc(null)
-    router.refresh()
+    try {
+      const result = await deleteReviewAction(id)
+      if (!result.success) {
+        console.error('[remove]', result.error)
+        return
+      }
+      setReviews((prev) => prev.filter((r) => r.id !== id))
+      router.refresh()
+    } catch (err) {
+      console.error('[remove] Erreur inattendue:', err)
+    } finally {
+      setProc(null)
+    }
   }
 
   const tabs: { key: Filter; label: string }[] = [

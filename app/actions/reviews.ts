@@ -52,8 +52,8 @@ export async function submitReviewAction(
     review_date,
     body:           data.body.trim(),
     highlight:      data.highlight.trim(),
-    approved:       false, // Par défaut, l'avis doit être modéré. Bonne pratique !
-  } as any) // J'ai laissé ton 'as any' car tu as bien noté qu'il sauterait après la génération des types Supabase.
+    approved:       false, // Toujours false côté serveur — jamais modifiable depuis le client.
+  })
 
   if (error) {
     console.error('[submitReviewAction]', error.message)
