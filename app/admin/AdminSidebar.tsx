@@ -21,12 +21,20 @@ export default function AdminSidebar({ userEmail }: Props) {
 
   // Cette partie là sert à déconnecter l'utilisateur proprement de Supabase.
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    
-    // J'ai fait ça pour renvoyer l'utilisateur sur la page de connexion une fois sa session détruite, et pour forcer Next.js à purger son cache de route.
-    router.push('/admin/login');
-    router.refresh();
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('[handleLogout] Erreur lors de la déconnexion:', error.message);
+      }
+    } catch (err) {
+      console.error('[handleLogout] Erreur inattendue:', err);
+    } finally {
+      // J'ai fait ça pour renvoyer l'utilisateur sur la page de connexion dans tous les cas
+      // (même si signOut échoue), et pour forcer Next.js à purger son cache de route.
+      router.push('/admin/login');
+      router.refresh();
+    }
   };
 
   return (

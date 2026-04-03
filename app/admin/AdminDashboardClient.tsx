@@ -59,24 +59,46 @@ export default function AdminDashboardClient({ stats, pendingReviews: initialRev
   const [processing, setProc]   = useState<string | null>(null)
 
   // Cette partie concerne l'approbation rapide d'un avis depuis le dashboard. C'est la même logique que sur la page complète des avis.
+  // Le guard "processing" en début de fonction évite la race condition si l'admin double-clique.
   const handleApprove = async (reviewId: string) => {
+    if (processing) return
     setProc(reviewId)
-    const supabase = createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('reviews') as any).update({ approved: true }).eq('id', reviewId)
-    setReviews((prev) => prev.filter((r) => r.id !== reviewId))
-    setProc(null)
-    router.refresh()
+    try {
+      const supabase = createClient()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from('reviews') as any).update({ approved: true }).eq('id', reviewId)
+      if (error) {
+        console.error('[handleApprove] Erreur Supabase:', error.message)
+        return
+      }
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId))
+      router.refresh()
+    } catch (err) {
+      console.error('[handleApprove] Erreur inattendue:', err)
+    } finally {
+      setProc(null)
+    }
   }
 
   // Cette partie là sert à supprimer un avis depuis le dashboard.
+  // Le guard "processing" en début de fonction évite la race condition si l'admin double-clique.
   const handleDelete = async (reviewId: string) => {
+    if (processing) return
     setProc(reviewId)
-    const supabase = createClient()
-    await supabase.from('reviews').delete().eq('id', reviewId)
-    setReviews((prev) => prev.filter((r) => r.id !== reviewId))
-    setProc(null)
-    router.refresh()
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('reviews').delete().eq('id', reviewId)
+      if (error) {
+        console.error('[handleDelete] Erreur Supabase:', error.message)
+        return
+      }
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId))
+      router.refresh()
+    } catch (err) {
+      console.error('[handleDelete] Erreur inattendue:', err)
+    } finally {
+      setProc(null)
+    }
   }
 
   return (
